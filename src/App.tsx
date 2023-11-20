@@ -1,5 +1,28 @@
 import "./App.css";
+import { useEffect } from "react";
+import useClientSession from "./hooks/useClientSession";
 
 export default function App() {
-  return <em>Snake? Do you think love can bloom even on the battlefield?</em>;
+  const { isActive, doActiveThisSession } = useClientSession();
+
+  useEffect(() => {
+    doActiveThisSession();
+  }, [doActiveThisSession]);
+
+  if (!isActive) {
+    return (
+      <div>
+        <em>Snake? Snake? Snaaaaaake!</em>
+        <button type="button" onClick={doActiveThisSession}>
+          Continue
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <em>Snake? Do you think love can bloom even on the battlefield?</em>
+    </div>
+  );
 }
