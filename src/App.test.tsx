@@ -1,9 +1,14 @@
+import "@testing-library/jest-dom";
 import { act, render, screen } from "@testing-library/react";
 import App from "./App";
-import { makeOpfsAdapter } from "./services/origin-private-file-system";
+import {
+  makeOpfsAdapter,
+  isPersistenceSupported,
+} from "./services/origin-private-file-system";
 
 jest.mock("./services/origin-private-file-system.ts", () => ({
   makeOpfsAdapter: jest.fn(),
+  isPersistenceSupported: jest.fn().mockReturnValue(true),
 }));
 
 describe("App", () => {
@@ -19,13 +24,13 @@ describe("App", () => {
     });
   });
 
-  test("App will render fine at first", async () => {
+  it("Renders fine at first", async () => {
     render(<App />);
     screen.getByText(/Postmaiden/i);
     screen.getByText(/Do you think love can bloom even on the battlefield/i);
   });
 
-  test("App will be blocked if persisted session changes", async () => {
+  it("Suspends interaction if persisted session changes", async () => {
     render(<App />);
 
     await act(() => jest.runAllTimers());
@@ -42,5 +47,12 @@ describe("App", () => {
     expect(
       screen.queryByText(/Do you think love can bloom even on the battlefield/i)
     ).toBeNull();
+  });
+
+  it("Blocks interaction if browser doesnt support the offline persistence", () => {
+    (isPersistenceSupported as jest.Mock).mockReturnValue(false);
+
+    render(<App />);
+    expect(screen.getByText(/Error/i)).toBeVisible();
   });
 });

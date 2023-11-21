@@ -31,3 +31,9 @@ export async function makeOpfsAdapter<T>(
     persist,
   };
 }
+
+export function isPersistenceSupported(): boolean {
+  return (
+    typeof window.FileSystemFileHandle?.prototype?.createWritable === "function"
+  );
+}

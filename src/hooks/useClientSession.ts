@@ -4,14 +4,18 @@ import {
   persistClientSessionUuid,
   retrieveClientSessionUuid,
 } from "../services/opfs-client-session";
+import { isPersistenceSupported } from "../services/origin-private-file-system";
 
 interface UseClientSessionResult {
   isActive: boolean;
   doActiveThisSession: () => void;
+  isOfflineModeSupported: boolean;
 }
 
 export default function useClientSession(): UseClientSessionResult {
-  const [isActive, setActive] = useState(true);
+  const isOfflineModeSupported = isPersistenceSupported();
+
+  const [isActive, setActive] = useState(isOfflineModeSupported);
   const thisUuidRef = useRef("");
 
   const doActiveThisSession = useCallback(() => {
@@ -43,5 +47,6 @@ export default function useClientSession(): UseClientSessionResult {
   return {
     isActive,
     doActiveThisSession,
+    isOfflineModeSupported,
   };
 }

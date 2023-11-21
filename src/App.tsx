@@ -3,11 +3,23 @@ import { useEffect } from "react";
 import useClientSession from "./hooks/useClientSession";
 
 export default function App() {
-  const { isActive, doActiveThisSession } = useClientSession();
+  const { isActive, doActiveThisSession, isOfflineModeSupported } =
+    useClientSession();
 
   useEffect(() => {
     doActiveThisSession();
   }, [doActiveThisSession]);
+
+  if (!isOfflineModeSupported) {
+    return (
+      <div>
+        <h1>Postmaiden</h1>
+        <div>
+          <strong>Error.</strong> Offline mode not supported by this browser.
+        </div>
+      </div>
+    );
+  }
 
   if (!isActive) {
     return (
