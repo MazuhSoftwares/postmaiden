@@ -1,37 +1,27 @@
-import { getOriginPrivateDirectory } from "native-file-system-adapter";
 import { makeOpfsAdapter } from "./origin-private-file-system";
-
-jest.mock("native-file-system-adapter", () => ({
-  getOriginPrivateDirectory: jest.fn(),
-}));
 
 describe("Origin private file system (OPFS) adapter", () => {
   beforeAll(() => {
-    const getDirectoryMock = jest.fn().mockImplementation(() => ({
-      getFileHandle: jest.fn().mockImplementation(() => ({
-        getFile: jest.fn().mockResolvedValue({
-          text: jest
-            .fn()
-            .mockResolvedValue('{ "taste": "pepsicola", "surprise": false }'),
-        }),
-        createWritable: jest.fn().mockResolvedValue({
-          write: jest.fn(),
-          close: jest.fn(),
-        }),
-      })),
-    }));
-
     Object.defineProperty(global.navigator, "storage", {
       value: {
-        getDirectory: getDirectoryMock,
+        getDirectory: jest.fn().mockImplementation(() => ({
+          getFileHandle: jest.fn().mockImplementation(() => ({
+            getFile: jest.fn().mockResolvedValue({
+              text: jest
+                .fn()
+                .mockResolvedValue(
+                  '{ "taste": "pepsicola", "surprise": false }'
+                ),
+            }),
+            createWritable: jest.fn().mockResolvedValue({
+              write: jest.fn(),
+              close: jest.fn(),
+            }),
+          })),
+        })),
       },
       writable: true,
     });
-
-    // if the polyfill gets removed, this line below must be removed too and that's it.
-    (getOriginPrivateDirectory as jest.Mock).mockImplementation(() =>
-      global.navigator.storage.getDirectory()
-    );
   });
 
   it("Integrates with real OPFS to retrieve parsed JSON content", async () => {

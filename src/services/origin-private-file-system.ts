@@ -1,5 +1,3 @@
-import { getOriginPrivateDirectory } from "native-file-system-adapter";
-
 export interface OriginPrivateFileSystemAdapter<T> {
   retrieve: () => Promise<T | null>;
   persist: (data: T) => Promise<void>;
@@ -8,7 +6,7 @@ export interface OriginPrivateFileSystemAdapter<T> {
 export async function makeOpfsAdapter<T>(
   filename: string
 ): Promise<OriginPrivateFileSystemAdapter<T>> {
-  const opfsRoot = await getOriginPrivateDirectory();
+  const opfsRoot = await navigator.storage.getDirectory();
   const fileHandle = await opfsRoot.getFileHandle(filename, {
     create: true,
   });
