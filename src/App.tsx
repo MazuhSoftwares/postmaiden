@@ -12,6 +12,7 @@ export default function App() {
   if (!isActive) {
     return (
       <div>
+        <h1>Postmaiden</h1>
         <em>Snake? Snake? Snaaaaaake!</em>
         <button type="button" onClick={doActiveThisSession}>
           Continue
@@ -22,6 +23,7 @@ export default function App() {
 
   return (
     <div>
+      <h1>Postmaiden</h1>
       <em>Snake? Do you think love can bloom even on the battlefield?</em>
     </div>
   );
