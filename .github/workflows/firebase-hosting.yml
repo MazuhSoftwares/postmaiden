@@ -1,6 +1,6 @@
 # More: https://github.com/firebase/firebase-tools
 
-name: Deploy to Firebase Hosting
+name: Deploy routine with checks
 
 on:
   push:
@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
       - run: npm ci
       - run: npm run lint
       - run: npm run test
