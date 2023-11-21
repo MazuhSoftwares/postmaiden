@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { v4 as uuidv4, validate as validateUuid } from "uuid";
+import { v4 as uuidv4 } from "uuid";
+import {
+  persistClientSessionUuid,
+  retrieveClientSessionUuid,
+} from "../services/opfs-client-session";
 
 interface UseClientSessionResult {
   isActive: boolean;
@@ -40,31 +44,4 @@ export default function useClientSession(): UseClientSessionResult {
     isActive,
     doActiveThisSession,
   };
-}
-
-async function retrieveClientSessionUuid(): Promise<string> {
-  const opfsRoot = await navigator.storage.getDirectory();
-
-  const fileHandle = await opfsRoot.getFileHandle("client-session.txt", {
-    create: true,
-  });
-  const file = await fileHandle.getFile();
-  const text = (await file.text()) || "";
-  return text.length && validateUuid(text) ? text : "";
-}
-
-async function persistClientSessionUuid(uuid: string): Promise<void> {
-  if (!uuid || !validateUuid(uuid)) {
-    throw new Error("Invalid client session uuid.");
-  }
-
-  const opfsRoot = await navigator.storage.getDirectory();
-
-  const fileHandle = await opfsRoot.getFileHandle("client-session.txt", {
-    create: true,
-  });
-  const writableFileStream = await fileHandle.createWritable();
-  await writableFileStream.write(uuid);
-
-  await writableFileStream.close();
 }
