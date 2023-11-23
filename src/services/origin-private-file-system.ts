@@ -3,6 +3,20 @@ export interface OriginPrivateFileSystemAdapter<T> {
   persist: (data: T) => Promise<void>;
 }
 
+export function makeOpfsAdapterSingleton<T>(
+  filename: string
+): () => Promise<OriginPrivateFileSystemAdapter<T>> {
+  let opfsAdapter: OriginPrivateFileSystemAdapter<T>;
+
+  return async () => {
+    if (!opfsAdapter) {
+      opfsAdapter = await makeOpfsAdapter<T>(filename);
+    }
+
+    return opfsAdapter;
+  };
+}
+
 export async function makeOpfsAdapter<T>(
   filename: string
 ): Promise<OriginPrivateFileSystemAdapter<T>> {
