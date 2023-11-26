@@ -2,12 +2,12 @@ import "@testing-library/jest-dom";
 import { act, render, screen } from "@testing-library/react";
 import App from "./App";
 import {
-  makeOpfsAdapterSingleton,
+  makeOpfsFileAdapterSingleton,
   isPersistenceSupported,
 } from "./services/origin-private-file-system";
 
 jest.mock("./services/origin-private-file-system.ts", () => ({
-  makeOpfsAdapterSingleton: jest
+  makeOpfsFileAdapterSingleton: jest
     .fn()
     .mockReturnValue(
       jest.fn().mockResolvedValue({ retrieve: jest.fn(), persist: jest.fn() })
@@ -19,8 +19,8 @@ describe("App", () => {
   beforeEach(() => {
     jest.useFakeTimers();
 
-    (makeOpfsAdapterSingleton as jest.Mock).mockClear();
-    (makeOpfsAdapterSingleton as jest.Mock).mockReturnValue(async () => ({
+    (makeOpfsFileAdapterSingleton as jest.Mock).mockClear();
+    (makeOpfsFileAdapterSingleton as jest.Mock).mockReturnValue(async () => ({
       retrieve: jest
         .fn()
         .mockResolvedValue("d48c2b8f-e557-4503-8fac-4561bba582ac"),
@@ -39,7 +39,7 @@ describe("App", () => {
 
     await act(() => jest.runAllTimers());
 
-    (makeOpfsAdapterSingleton as jest.Mock).mockResolvedValue({
+    (makeOpfsFileAdapterSingleton as jest.Mock).mockResolvedValue({
       retrieve: jest
         .fn()
         .mockResolvedValue("01fb9ee8-926c-483e-9eb5-f020762d4b00"),

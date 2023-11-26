@@ -1,6 +1,7 @@
 import "./App.css";
 import { useEffect } from "react";
 import useClientSession from "./hooks/useClientSession";
+import { ProjectsManagementPage } from "./features/projects-management/ProjectsManagementPage";
 
 export default function App() {
   const { isActive, doActiveThisSession, isOfflineModeSupported } =
@@ -37,6 +38,7 @@ export default function App() {
     <div>
       <h1>Postmaiden</h1>
       <em>Snake? Do you think love can bloom even on the battlefield?</em>
+      <ProjectsManagementPage />
     </div>
   );
 }

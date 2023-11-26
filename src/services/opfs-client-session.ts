@@ -1,7 +1,9 @@
 import { validate as validateUuid } from "uuid";
-import { makeOpfsAdapterSingleton } from "./origin-private-file-system";
+import { makeOpfsFileAdapterSingleton } from "./origin-private-file-system";
 
-const getOpfsAdapter = makeOpfsAdapterSingleton<string>("client-session.txt");
+const getOpfsAdapter = makeOpfsFileAdapterSingleton<string>({
+  filename: "client-session.txt",
+});
 
 export async function retrieveClientSessionUuid(): Promise<string> {
   const opfs = await getOpfsAdapter();

@@ -1,6 +1,6 @@
 import {
   isPersistenceSupported,
-  makeOpfsAdapterSingleton,
+  makeOpfsFileAdapterSingleton,
 } from "./origin-private-file-system";
 
 describe("Origin private file system (OPFS) adapter", () => {
@@ -8,17 +8,19 @@ describe("Origin private file system (OPFS) adapter", () => {
     Object.defineProperty(global.navigator, "storage", {
       value: {
         getDirectory: jest.fn().mockResolvedValue({
-          getFileHandle: jest.fn().mockResolvedValue({
-            getFile: jest.fn().mockResolvedValue({
-              text: jest
-                .fn()
-                .mockResolvedValue(
-                  '{ "taste": "pepsicola", "surprise": false }'
-                ),
-            }),
-            createWritable: jest.fn().mockResolvedValue({
-              write: jest.fn(),
-              close: jest.fn(),
+          getDirectoryHandle: jest.fn().mockResolvedValue({
+            getFileHandle: jest.fn().mockResolvedValue({
+              getFile: jest.fn().mockResolvedValue({
+                text: jest
+                  .fn()
+                  .mockResolvedValue(
+                    '{ "taste": "pepsicola", "surprise": false }'
+                  ),
+              }),
+              createWritable: jest.fn().mockResolvedValue({
+                write: jest.fn(),
+                close: jest.fn(),
+              }),
             }),
           }),
         }),
@@ -28,23 +30,23 @@ describe("Origin private file system (OPFS) adapter", () => {
   });
 
   it("Can generate specific singletons (for more pragmatic usage)", async () => {
-    const getOpfsAdapter = makeOpfsAdapterSingleton<string>(
-      "something-in-the-way.txt"
-    );
+    const getOpfsAdapter = makeOpfsFileAdapterSingleton<string>({
+      filename: "something-in-the-way.txt",
+    });
     const opfs1 = await getOpfsAdapter();
     const opfs2 = await getOpfsAdapter();
     expect(opfs1).toBe(opfs2);
   });
 
   it("Necessarily means that two different specific singletons are indeed different references", async () => {
-    const getOpfsAdapter1 = makeOpfsAdapterSingleton<string>(
-      "the-man-who-sold-the-world.txt"
-    );
+    const getOpfsAdapter1 = makeOpfsFileAdapterSingleton<string>({
+      filename: "the-man-who-sold-the-world.txt",
+    });
     const opfs1 = await getOpfsAdapter1();
 
-    const getOpfsAdapter2 = makeOpfsAdapterSingleton<string>(
-      "i-never-lost-control.txt"
-    );
+    const getOpfsAdapter2 = makeOpfsFileAdapterSingleton<string>({
+      filename: "i-never-lost-control.txt",
+    });
     const opfs2 = await getOpfsAdapter2();
 
     expect(opfs1).not.toBe(opfs2);
@@ -62,16 +64,18 @@ describe("Origin private file system (OPFS) adapter", () => {
     Object.defineProperty(global.navigator, "storage", {
       value: {
         getDirectory: jest.fn().mockResolvedValue({
-          getFileHandle: getFileHandleMock,
+          getDirectoryHandle: jest.fn().mockResolvedValue({
+            getFileHandle: getFileHandleMock,
+          }),
         }),
       },
       writable: true,
     });
 
-    const getOpfsAdapter = makeOpfsAdapterSingleton<{
+    const getOpfsAdapter = makeOpfsFileAdapterSingleton<{
       taste: string;
       surprise: boolean;
-    }>("lana.json");
+    }>({ filename: "lana.json" });
     const opfs = await getOpfsAdapter();
     const retrieved = await opfs.retrieve();
     expect(retrieved).toEqual({ taste: "pepsicola", surprise: false });
@@ -85,9 +89,11 @@ describe("Origin private file system (OPFS) adapter", () => {
     Object.defineProperty(global.navigator, "storage", {
       value: {
         getDirectory: jest.fn().mockResolvedValue({
-          getFileHandle: jest.fn().mockResolvedValue({
-            getFile: jest.fn().mockResolvedValue({
-              text: jest.fn().mockResolvedValue(""),
+          getDirectoryHandle: jest.fn().mockResolvedValue({
+            getFileHandle: jest.fn().mockResolvedValue({
+              getFile: jest.fn().mockResolvedValue({
+                text: jest.fn().mockResolvedValue(""),
+              }),
             }),
           }),
         }),
@@ -95,10 +101,10 @@ describe("Origin private file system (OPFS) adapter", () => {
       writable: true,
     });
 
-    const getOpfsAdapter = makeOpfsAdapterSingleton<{
+    const getOpfsAdapter = makeOpfsFileAdapterSingleton<{
       taste: string;
       surprise: boolean;
-    }>("lana_banana.json");
+    }>({ filename: "lana_banana.json" });
     const opfs = await getOpfsAdapter();
     const retrieved = await opfs.retrieve();
     expect(retrieved).toEqual(null);
@@ -117,16 +123,18 @@ describe("Origin private file system (OPFS) adapter", () => {
     Object.defineProperty(global.navigator, "storage", {
       value: {
         getDirectory: jest.fn().mockResolvedValue({
-          getFileHandle: getFileHandleMock,
+          getDirectoryHandle: jest.fn().mockResolvedValue({
+            getFileHandle: getFileHandleMock,
+          }),
         }),
       },
       writable: true,
     });
 
-    const getOpfsAdapter = makeOpfsAdapterSingleton<{
+    const getOpfsAdapter = makeOpfsFileAdapterSingleton<{
       handsOn: string;
       nameOn: string;
-    }>("delrey.json");
+    }>({ filename: "delrey.json" });
     const opfs = await getOpfsAdapter();
     await opfs.persist({ handsOn: "hips", nameOn: "lips" });
 
@@ -152,16 +160,18 @@ describe("Origin private file system (OPFS) adapter", () => {
     Object.defineProperty(global.navigator, "storage", {
       value: {
         getDirectory: jest.fn().mockResolvedValue({
-          getFileHandle: getFileHandleMock,
+          getDirectoryHandle: jest.fn().mockResolvedValue({
+            getFileHandle: getFileHandleMock,
+          }),
         }),
       },
       writable: true,
     });
 
-    const getOpfsAdapter = makeOpfsAdapterSingleton<{
+    const getOpfsAdapter = makeOpfsFileAdapterSingleton<{
       handsOn: string;
       nameOn: string;
-    }>("delrey.json");
+    }>({ filename: "delrey.json" });
     const opfs = await getOpfsAdapter();
 
     await expect(() =>
