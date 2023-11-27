@@ -1,4 +1,3 @@
-import "./App.css";
 import { useEffect } from "react";
 import useClientSession from "./hooks/useClientSession";
 import { ProjectsManagementPage } from "./features/projects-management/ProjectsManagementPage";
