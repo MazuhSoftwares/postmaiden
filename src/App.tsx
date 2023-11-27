@@ -13,32 +13,40 @@ export default function App() {
 
   if (!isOfflineModeSupported) {
     return (
-      <div>
-        <h1>Postmaiden</h1>
-        <div>
-          <strong>Error.</strong> Offline mode not supported by this browser.
-        </div>
-      </div>
+      <main>
+        <MainTitle />
+        <strong>Error.</strong> Offline mode is not supported by this browser.
+      </main>
     );
   }
 
   if (!isActive) {
     return (
-      <div>
-        <h1>Postmaiden</h1>
-        <em>Snake? Snake? Snaaaaaake!</em>
+      <main>
+        <MainTitle />
+        <em>
+          The app was opened in another tab or window. In offline mode you can
+          use it only one at a time.
+        </em>
         <button type="button" onClick={doActiveThisSession}>
-          Continue
+          Keep using Postmaiden here
         </button>
-      </div>
+      </main>
     );
   }
 
   return (
     <div>
-      <h1>Postmaiden</h1>
-      <em>Snake? Do you think love can bloom even on the battlefield?</em>
+      <MainTitle />
       <ProjectsManagementPage />
     </div>
+  );
+}
+
+function MainTitle() {
+  return (
+    <h1 className="scroll-m-20 tracking-tight text-2xl lg:text-3xl">
+      Postmaiden
+    </h1>
   );
 }

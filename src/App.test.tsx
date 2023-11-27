@@ -31,7 +31,7 @@ describe("App", () => {
   it("Renders fine at first", async () => {
     render(<App />);
     screen.getByText(/Postmaiden/i);
-    screen.getByText(/Do you think love can bloom even on the battlefield/i);
+    screen.getByText(/Projects/i);
   });
 
   it("Suspends interaction if persisted session changes", async () => {
@@ -49,14 +49,16 @@ describe("App", () => {
     await act(() => jest.runAllTimers());
 
     expect(
-      screen.queryByText(/Do you think love can bloom even on the battlefield/i)
-    ).toBeNull();
+      screen.queryByText(/The app was opened in another tab or window/i)
+    ).toBeVisible();
   });
 
   it("Blocks interaction if browser doesnt support the offline persistence", () => {
     (isPersistenceSupported as jest.Mock).mockReturnValue(false);
 
     render(<App />);
-    expect(screen.getByText(/Error/i)).toBeVisible();
+    expect(
+      screen.getByText(/Offline mode is not supported by this browser/i)
+    ).toBeVisible();
   });
 });

@@ -16,4 +16,19 @@ module.exports = {
     ],
     "@babel/preset-typescript",
   ],
+  env: {
+    test: {
+      plugins: [
+        [
+          "babel-plugin-module-resolver",
+          {
+            alias: {
+              "@/components": "./src/components",
+              "@/lib/utils": "./src/lib/utils",
+            },
+          },
+        ],
+      ],
+    },
+  },
 };
