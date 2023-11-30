@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Switch, Router, Route } from "wouter";
 import useClientSession from "./hooks/useClientSession";
 import { ProjectsManagementPage } from "./features/projects-management/ProjectsManagementPage";
 
@@ -35,10 +36,17 @@ export default function App() {
   }
 
   return (
-    <div>
+    <>
       <MainTitle />
-      <ProjectsManagementPage />
-    </div>
+      <Router>
+        <Switch>
+          <Route path="/" component={ProjectsManagementPage} />
+          <Route>
+            <strong>Error.</strong> Page not found.
+          </Route>
+        </Switch>
+      </Router>
+    </>
   );
 }
 
