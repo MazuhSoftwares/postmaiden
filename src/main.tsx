@@ -6,7 +6,7 @@ import { ThemeProvider } from "./components/theme/ThemeProvider.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider defaultTheme="dark" storageKey="postmaiden-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="postmaiden-ui-theme">
       <App />
     </ThemeProvider>
   </React.StrictMode>

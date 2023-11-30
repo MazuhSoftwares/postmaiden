@@ -21,7 +21,8 @@ npm run dev
 - Offline-first for free plan features, powered by [OPFS](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system)
 - Desktop-first interface, but decently responsive
 - Chrome and Firefox support
-- Styles by [Shadcn UI](https://ui.shadcn.com/)
+- Components bootstrapped by [Shadcn UI](https://ui.shadcn.com/)
+- CSS tool is [Tailwind](https://tailwindcss.com/docs/)
 - Serverless cloud infrastructure
 - Reasonable test coverage on each feature
 

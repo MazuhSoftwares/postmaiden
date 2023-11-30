@@ -3,6 +3,7 @@ import { Switch, Router, Route } from "wouter";
 import useClientSession from "./hooks/useClientSession";
 import { ProjectsManagementPage } from "./features/projects-management/ProjectsManagementPage";
 import { Button } from "./components/ui/button";
+import { ErrorPageTemplate } from "./components/template/ErrorPage";
 
 export default function App() {
   const { isActive, doActiveThisSession, isOfflineModeSupported } =
@@ -14,48 +15,36 @@ export default function App() {
 
   if (!isOfflineModeSupported) {
     return (
-      <main>
-        <MainTitle />
-        <strong>Error.</strong> Offline mode is not supported by this browser.
-      </main>
+      <ErrorPageTemplate>
+        Offline mode is not supported by this browser.
+      </ErrorPageTemplate>
     );
   }
 
   if (!isActive) {
     return (
-      <main>
-        <MainTitle />
-        <em>
+      <ErrorPageTemplate>
+        <span className="block mb-2">
           The app was opened in another tab or window. In offline mode you can
           use it only one at a time.
-        </em>
-        <br />
+        </span>
         <Button type="button" onClick={doActiveThisSession}>
-          Keep using Postmaiden here
+          Keep using it here
         </Button>
-      </main>
+      </ErrorPageTemplate>
     );
   }
 
   return (
     <>
-      <MainTitle />
       <Router>
         <Switch>
           <Route path="/" component={ProjectsManagementPage} />
           <Route>
-            <strong>Error.</strong> Page not found.
+            <ErrorPageTemplate>Page not found.</ErrorPageTemplate>
           </Route>
         </Switch>
       </Router>
     </>
-  );
-}
-
-function MainTitle() {
-  return (
-    <h1 className="scroll-m-20 tracking-tight text-2xl lg:text-3xl">
-      Postmaiden
-    </h1>
   );
 }

@@ -23,17 +23,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PageTitle } from "@/components/ui/typography";
+import { AppPageTemplate } from "@/components/template/AppPageTemplate";
 
 export function ProjectsManagementPage() {
   return (
     <ProjectsManagementContextProvider>
-      <main>
+      <AppPageTemplate>
         <PageTitle>
           <span className="pr-4">My projects</span>
           <ProjectsCreationButton />
         </PageTitle>
         <ProjectsList />
-      </main>
+      </AppPageTemplate>
     </ProjectsManagementContextProvider>
   );
 }
