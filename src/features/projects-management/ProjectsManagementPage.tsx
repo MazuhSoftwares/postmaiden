@@ -50,6 +50,17 @@ function ProjectsList() {
     return <div>Error: {isError.message}</div>;
   }
 
+  if (projects.length === 0) {
+    return (
+      <div className="w-fit m-auto flex flex-col">
+        <p className="mb-2 w-full">You don't have any projects yet.</p>
+        <div className="w-full flex justify-center">
+          <ProjectsCreationButton />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ul className="pl-3">
       {projects.map((project) => (
