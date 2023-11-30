@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Switch, Router, Route } from "wouter";
 import useClientSession from "./hooks/useClientSession";
 import { ProjectsManagementPage } from "./features/projects-management/ProjectsManagementPage";
+import { Button } from "./components/ui/button";
 
 export default function App() {
   const { isActive, doActiveThisSession, isOfflineModeSupported } =
@@ -28,9 +29,10 @@ export default function App() {
           The app was opened in another tab or window. In offline mode you can
           use it only one at a time.
         </em>
-        <button type="button" onClick={doActiveThisSession}>
+        <br />
+        <Button type="button" onClick={doActiveThisSession}>
           Keep using Postmaiden here
-        </button>
+        </Button>
       </main>
     );
   }
