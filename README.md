@@ -1,6 +1,7 @@
 # Postmaiden
 
-Postmaiden is a simplified yet elegant management tool for HTTP APIs.
+Postmaiden is an application for testing and documenting HTTP APIs,
+with straightforward usability, made for developers.
 
 ## Setting up
 
