@@ -2,8 +2,6 @@ import { SyntheticEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useProjectsManagement } from "./ProjectsManagementContext";
-import { ProjectsManagementContextProvider } from "./ProjectsManagementContextProvider";
 import {
   Dialog,
   DialogContent,
@@ -22,9 +20,12 @@ import {
   FormProvider,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Title } from "@/components/ui/typography";
+import { Anchor, Title } from "@/components/ui/typography";
 import { AppPageTemplate } from "@/components/template/AppPageTemplate";
 import { ProjectListingItem } from "./projects-management-entities";
+import { cn } from "@/lib/utils";
+import { useProjectsManagement } from "./ProjectsManagementContext";
+import { ProjectsManagementContextProvider } from "./ProjectsManagementContextProvider";
 
 export function ProjectsManagementPage() {
   return (
@@ -46,13 +47,15 @@ function ProjectsManagementHeader() {
 
   return (
     <Title>
-      <span className="pr-4">My projects</span>
+      <span className="pr-4">List of projects</span>
       <ProjectsCreationButton />
     </Title>
   );
 }
 
 function ProjectsList() {
+  const [hoveredProject, setHoveredProject] = useState<string | null>(null);
+
   const { items: projects, isLoading, isError } = useProjectsManagement();
 
   if (isLoading) {
@@ -77,13 +80,30 @@ function ProjectsList() {
   }
 
   return (
-    <ul className="pl-3">
-      {projects.map((project) => (
-        <li key={project.uuid}>
-          {project.name} <ProjectRemovalButton project={project} />
-        </li>
-      ))}
-    </ul>
+    <div>
+      <p>Click on a project to open it:</p>
+      <ul className="list-disc pl-4 mt-2">
+        {projects.map((project) => (
+          <li
+            key={project.uuid}
+            onMouseEnter={() => setHoveredProject(project.uuid)}
+            onMouseLeave={() => setHoveredProject(null)}
+          >
+            <Anchor href={`/project/${project.uuid}`} className="py-4">
+              {project.name}
+            </Anchor>
+            <span
+              className={cn(
+                "ml-5",
+                hoveredProject === project.uuid ? "visible" : "invisible"
+              )}
+            >
+              <ProjectRemovalButton project={project} />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
