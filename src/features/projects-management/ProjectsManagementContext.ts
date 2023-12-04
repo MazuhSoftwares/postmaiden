@@ -3,7 +3,8 @@ import { ProjectListingItem } from "./projects-management-entities";
 
 export interface ProjectsManagementContextValue {
   items: ProjectListingItem[];
-  create: (name: string) => Promise<void>;
+  create: (creating: { name: string }) => Promise<void>;
+  remove: (removing: ProjectListingItem) => Promise<void>;
   isLoading: boolean;
   isError: Error | null;
 }

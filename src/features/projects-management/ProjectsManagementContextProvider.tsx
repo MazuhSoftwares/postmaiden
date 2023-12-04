@@ -1,10 +1,14 @@
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import {
   persistNewProjectListingItem,
+  removeProjectListingItem,
   retrieveProjectsListing,
 } from "./opfs-projects-listing-service";
 import { ProjectListingItem } from "./projects-management-entities";
-import { ProjectsManagementContext } from "./ProjectsManagementContext";
+import {
+  ProjectsManagementContext,
+  ProjectsManagementContextValue,
+} from "./ProjectsManagementContext";
 
 export function ProjectsManagementContextProvider({
   children,
@@ -28,8 +32,8 @@ export function ProjectsManagementContextProvider({
     pullProjectsListing();
   }, [pullProjectsListing]);
 
-  const create = useCallback(
-    async (name: string) => {
+  const create: ProjectsManagementContextValue["create"] = useCallback(
+    async ({ name }) => {
       setError(null);
       setIsLoading(true);
       persistNewProjectListingItem(name)
@@ -40,9 +44,21 @@ export function ProjectsManagementContextProvider({
     [pullProjectsListing]
   );
 
+  const remove: ProjectsManagementContextValue["remove"] = useCallback(
+    async (removing: ProjectListingItem) => {
+      setError(null);
+      setIsLoading(true);
+      removeProjectListingItem(removing)
+        .catch((error) => setError(error))
+        .finally(() => setIsLoading(false))
+        .then(() => pullProjectsListing());
+    },
+    [pullProjectsListing]
+  );
+
   return (
     <ProjectsManagementContext.Provider
-      value={{ items, create, isLoading, isError }}
+      value={{ items, isLoading, isError, create, remove }}
     >
       {children}
     </ProjectsManagementContext.Provider>

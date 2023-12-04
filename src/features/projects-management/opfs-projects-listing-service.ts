@@ -59,4 +59,17 @@ export async function persistNewProjectListingItem(
   return item;
 }
 
+export async function removeProjectListingItem(
+  project: ProjectListingItem
+): Promise<{ uuid: string }> {
+  const file = await makeOpfsFileAdapter<Project>({
+    filename: `${project.uuid}_${project.name}.json`,
+    subdir: PROJECTS_OPFS_SUBDIRECTORY,
+  });
+
+  await file.remove();
+
+  return { uuid: project.uuid };
+}
+
 export const PROJECTS_OPFS_SUBDIRECTORY = "projects";

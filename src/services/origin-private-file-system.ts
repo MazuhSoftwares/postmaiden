@@ -6,6 +6,7 @@ export interface OriginPrivateFileSystemFileAdapterOptions {
 export interface OriginPrivateFileSystemFileAdapter<T> {
   retrieve: () => Promise<T | null>;
   persist: (data: T) => Promise<void>;
+  remove: () => Promise<void>;
 }
 
 export function makeOpfsFileAdapterSingleton<T>(
@@ -59,14 +60,20 @@ export async function makeOpfsFileAdapter<T>({
     }
   };
 
+  const remove = async () => {
+    return directoryHandle.removeEntry(filename);
+  };
+
   return {
     retrieve,
     persist,
+    remove,
   };
 }
 
 export interface OriginPrivateFileSystemDirAdapter {
   retrieveFilenames: () => Promise<string[]>;
+  removeByFilename: (filename: string) => Promise<void>;
 }
 
 export interface OriginPrivateFileSystemDirAdapterOptions {
@@ -102,8 +109,13 @@ export async function makeOpfsMainDirAdapter({
     return filenames;
   };
 
+  const removeByFilename = async (filename: string) => {
+    return directoryHandle.removeEntry(filename);
+  };
+
   return {
     retrieveFilenames,
+    removeByFilename,
   };
 }
 

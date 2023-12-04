@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,18 +24,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { PageTitle } from "@/components/ui/typography";
 import { AppPageTemplate } from "@/components/template/AppPageTemplate";
+import { ProjectListingItem } from "./projects-management-entities";
 
 export function ProjectsManagementPage() {
   return (
     <ProjectsManagementContextProvider>
       <AppPageTemplate>
-        <PageTitle>
-          <span className="pr-4">My projects</span>
-          <ProjectsCreationButton />
-        </PageTitle>
+        <ProjectsManagementHeader />
         <ProjectsList />
       </AppPageTemplate>
     </ProjectsManagementContextProvider>
+  );
+}
+
+function ProjectsManagementHeader() {
+  const { items: projects } = useProjectsManagement();
+
+  return (
+    <PageTitle>
+      <span className="pr-4">My API projects</span>
+      {projects.length > 0 && <ProjectsCreationButton />}
+    </PageTitle>
   );
 }
 
@@ -64,7 +73,9 @@ function ProjectsList() {
   return (
     <ul className="pl-3">
       {projects.map((project) => (
-        <li key={project.uuid}>{project.name}</li>
+        <li key={project.uuid}>
+          {project.name} <ProjectRemovalButton project={project} />
+        </li>
       ))}
     </ul>
   );
@@ -103,7 +114,7 @@ function ProjectsCreationButton() {
   });
 
   const handleSubmit = (values: z.infer<typeof projectFormSchema>) => {
-    create(values.name).then(close);
+    create(values).then(close);
   };
 
   return (
@@ -145,6 +156,45 @@ function ProjectsCreationButton() {
               </DialogFooter>
             </form>
           </FormProvider>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ProjectRemovalButton({ project }: { project: ProjectListingItem }) {
+  const { remove } = useProjectsManagement();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const open = () => setIsOpen(true);
+  const close = () => setIsOpen(false);
+
+  const handleSubmit = (event: SyntheticEvent) => {
+    event.preventDefault();
+    remove(project).then(close);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Button variant="secondary" onClick={open}>
+        Remove
+      </Button>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Project removal</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to remove <strong>{project.name}</strong>?
+          </DialogDescription>
+          <DialogFooter className="pt-4">
+            <form onSubmit={handleSubmit}>
+              <Button variant="outline" onClick={close}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="destructive">
+                Remove project forever
+              </Button>
+            </form>
+          </DialogFooter>
         </DialogHeader>
       </DialogContent>
     </Dialog>
