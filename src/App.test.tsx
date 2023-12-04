@@ -31,7 +31,6 @@ describe("App", () => {
   it("Renders fine at first", async () => {
     render(<App />);
     screen.getByText(/Postmaiden/i);
-    screen.getByText(/Projects/i);
   });
 
   it("Suspends interaction if persisted session changes", async () => {

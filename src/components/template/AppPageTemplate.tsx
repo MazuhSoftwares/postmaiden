@@ -1,13 +1,28 @@
-export function AppPageTemplate({ children }: { children: React.ReactNode }) {
+import { cn } from "@/lib/utils";
+
+export function AppPageTemplate({
+  children,
+  container,
+}: {
+  children: React.ReactNode;
+  container?: boolean;
+}) {
   return (
     <div className="h-screen w-screen flex flex-col">
-      <header className="px-4 py-2 shrink-0 border-b-2 w-full flex items-center">
+      <header className="px-4 py-3 shrink-0 border-b-2 w-full flex items-center">
         <h1 className="tracking-tight text-2xl cursor-default bg-primary w-fit px-6 py-1 rounded-br-lg font-extralight">
           Postmaiden
         </h1>
-        <p className="ml-3">Hello, world! 😉</p>
+        <div className="ml-auto">
+          <p>Hello, developer.</p>
+        </div>
       </header>
-      <main className="px-4 py-6 grow overflow-y-auto overflow-x-hidden flex flex-col">
+      <main
+        className={cn(
+          "px-4 py-6 grow overflow-y-auto overflow-x-hidden flex flex-col",
+          container ? "container" : ""
+        )}
+      >
         {children}
       </main>
       <footer className="shrink-0 w-full p-2 pb-3 border-t">

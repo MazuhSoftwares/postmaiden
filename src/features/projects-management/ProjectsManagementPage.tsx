@@ -22,14 +22,14 @@ import {
   FormProvider,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PageTitle } from "@/components/ui/typography";
+import { Title } from "@/components/ui/typography";
 import { AppPageTemplate } from "@/components/template/AppPageTemplate";
 import { ProjectListingItem } from "./projects-management-entities";
 
 export function ProjectsManagementPage() {
   return (
     <ProjectsManagementContextProvider>
-      <AppPageTemplate>
+      <AppPageTemplate container>
         <ProjectsManagementHeader />
         <ProjectsList />
       </AppPageTemplate>
@@ -40,11 +40,15 @@ export function ProjectsManagementPage() {
 function ProjectsManagementHeader() {
   const { items: projects } = useProjectsManagement();
 
+  if (!projects.length) {
+    return null;
+  }
+
   return (
-    <PageTitle>
-      <span className="pr-4">My API projects</span>
-      {projects.length > 0 && <ProjectsCreationButton />}
-    </PageTitle>
+    <Title>
+      <span className="pr-4">My projects</span>
+      <ProjectsCreationButton />
+    </Title>
   );
 }
 
@@ -62,7 +66,9 @@ function ProjectsList() {
   if (projects.length === 0) {
     return (
       <div className="w-fit m-auto flex flex-col">
-        <p className="mb-2 w-full">You don't have any projects yet.</p>
+        <Title>Start now by creating a project.</Title>
+        <p className="mb-2 w-full">No complex forms, don't worry. 😉</p>
+        <br />
         <div className="w-full flex justify-center">
           <ProjectsCreationButton />
         </div>

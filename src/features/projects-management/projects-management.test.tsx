@@ -4,10 +4,20 @@ import { ProjectsManagementPage } from "./ProjectsManagementPage";
 import * as OPFSProjectsListingService from "./opfs-projects-listing-service";
 
 describe("ProjectsManagementPage", () => {
-  it("renders", () => {
-    render(<ProjectsManagementPage />);
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    expect(screen.getByText(/My API projects/i)).toBeVisible();
+  it("renders", async () => {
+    jest
+      .spyOn(OPFSProjectsListingService, "retrieveProjectsListing")
+      .mockResolvedValue({
+        items: [],
+      });
+
+    await act(async () => render(<ProjectsManagementPage />));
+
+    expect(screen.getByText(/Start now/i)).toBeVisible();
   });
 
   it("lists projects", async () => {
