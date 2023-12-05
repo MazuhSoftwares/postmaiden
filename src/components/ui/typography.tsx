@@ -21,7 +21,7 @@ export function Anchor({
     <a
       {...props}
       className={cn(
-        "transition-colors hover:text-foreground/80 text-foreground/60",
+        "transition-colors decoration-primary decoration-2 hover:underline hover:text-foreground text-foreground/80",
         props.className
       )}
     >
