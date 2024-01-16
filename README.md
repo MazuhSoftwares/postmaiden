@@ -24,6 +24,7 @@ npm run dev
 - Chrome and Firefox support
 - Components bootstrapped by [Shadcn UI](https://ui.shadcn.com/)
 - CSS tool is [Tailwind](https://tailwindcss.com/docs/)
+- Icons by [Font Awesome](https://fontawesome.com/search?o=r&m=free)
 - Serverless cloud infrastructure
 - Reasonable test coverage on each feature
 

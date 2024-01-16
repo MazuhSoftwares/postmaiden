@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { useParams } from "wouter";
 import { validate as validateUuid } from "uuid";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { AppPageTemplate } from "@/components/template/AppPageTemplate";
 import { Anchor, Title } from "@/components/ui/typography";
-import { useEffect } from "react";
 
 export function ProjectWorkspacePage() {
   const params = useParams();
@@ -32,10 +34,16 @@ export function ProjectWorkspacePage() {
     <AppPageTemplate container>
       <p>
         <Anchor href="/">
-          <small>Back to Projects selection</small>
+          <small>
+            <FontAwesomeIcon icon={faArrowLeft} />{" "}
+            <span>Back to Projects selection</span>
+          </small>
         </Anchor>
       </p>
-      <Title>Project workspace</Title>
+      <Title>
+        <FontAwesomeIcon icon={faFolderOpen} />
+        <span className="pl-1">Project workspace</span>
+      </Title>
       <p>Wadda wadda.</p>
     </AppPageTemplate>
   );

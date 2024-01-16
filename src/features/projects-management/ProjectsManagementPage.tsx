@@ -2,6 +2,12 @@ import { SyntheticEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFolderPlus,
+  faLaptopCode,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   Dialog,
   DialogContent,
@@ -47,7 +53,9 @@ function ProjectsManagementHeader() {
 
   return (
     <Title>
-      <span className="pr-4">List of projects</span>
+      <span className="pr-4">
+        <FontAwesomeIcon icon={faLaptopCode} /> List of projects
+      </span>
       <ProjectsCreationButton />
     </Title>
   );
@@ -145,10 +153,16 @@ function ProjectsCreationButton() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <Button onClick={open}>Create project</Button>
+      <Button onClick={open}>
+        <FontAwesomeIcon icon={faFolderPlus} />
+        <span className="pl-1">Create project</span>
+      </Button>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Project</DialogTitle>
+          <DialogTitle>
+            <FontAwesomeIcon icon={faFolderPlus} />
+            <span className="pl-1">Project</span>
+          </DialogTitle>
           <DialogDescription>
             A project is a context to store your HTTP requests.
           </DialogDescription>
@@ -202,8 +216,8 @@ function ProjectRemovalButton({ project }: { project: ProjectListingItem }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <Button variant="secondary" onClick={open}>
-        Remove
+      <Button variant="secondary" onClick={open} title="Remove">
+        <FontAwesomeIcon icon={faTrash} aria-label="Remove" />
       </Button>
       <DialogContent>
         <DialogHeader>
