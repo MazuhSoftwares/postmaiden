@@ -30,7 +30,7 @@ import { ProjectsManagementContextProvider } from "./ProjectsManagementContextPr
 export function ProjectsManagementPage() {
   return (
     <ProjectsManagementContextProvider>
-      <AppPageTemplate container>
+      <AppPageTemplate>
         <ProjectsManagementHeader />
         <ProjectsList />
       </AppPageTemplate>

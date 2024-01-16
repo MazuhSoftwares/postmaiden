@@ -20,7 +20,7 @@ export function AppPageTemplate({
       <main
         className={cn(
           "px-4 py-6 grow overflow-y-auto overflow-x-hidden flex flex-col",
-          container ? "container" : ""
+          container ? "container" : "mx-10"
         )}
       >
         {children}
