@@ -14,7 +14,7 @@ import {
 
 /**
  * Based on stored filenames in the projects private directory,
- * generates a list of entries.
+ * generates a list of specs.
  *
  * Each entry, because of such shallow approach, is more like a "pointer",
  * the full data regarding the project is inside the file and must be handled
@@ -63,7 +63,7 @@ export async function persistNewProjectListingItem(
     uuid: item.uuid,
     name: item.name,
     sections: [],
-    requests: [],
+    specs: [],
   });
 
   return item;
@@ -120,7 +120,7 @@ export async function updateProjectListingItem(
     ...item,
     // TODO: this is erasing previous sections and requests.
     sections: [],
-    requests: [],
+    specs: [],
   });
 
   await removeProjectListingItem(found);

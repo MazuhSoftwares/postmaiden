@@ -2,7 +2,7 @@ export interface Project {
   uuid: string;
   name: string;
   sections: ProjectSection[];
-  requests: ProjectRequest[];
+  specs: ProjectRequestSpec[];
 }
 
 export interface ProjectSection {
@@ -10,15 +10,15 @@ export interface ProjectSection {
   name: string;
 }
 
-export interface ProjectRequest {
+export interface ProjectRequestSpec {
   uuid: string;
   url: string;
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  headers: ProjectRequestHeader[];
+  headers: ProjectRequestSpecHeader[];
   body: string;
 }
 
-export interface ProjectRequestHeader {
+export interface ProjectRequestSpecHeader {
   key: string;
   value: string;
   isEnabled: boolean;

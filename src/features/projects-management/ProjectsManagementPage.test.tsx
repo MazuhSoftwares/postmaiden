@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { ProjectsManagementPage } from "./ProjectsManagementPage";
 import * as OPFSProjectsListingService from "./opfs-projects-listing-service";
 
-describe("ProjectsManagementPage", () => {
+describe("Projects listing management page", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
