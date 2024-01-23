@@ -90,4 +90,40 @@ describe("ProjectsManagementPage", () => {
       OPFSProjectsListingService.removeProjectListingItem
     ).toHaveBeenCalledWith({ uuid: "123-123-123", name: "Some random API" });
   });
+
+  it("can update a project in a modal", async () => {
+    jest
+      .spyOn(OPFSProjectsListingService, "retrieveProjectsListing")
+      .mockResolvedValue({
+        items: [
+          { uuid: "111-111-111", name: "My first API" },
+          { uuid: "222-222-222", name: "Just a second project" },
+          { uuid: "333-333-333", name: "Some third thing" },
+        ],
+      });
+
+    jest.spyOn(OPFSProjectsListingService, "updateProjectListingItem");
+
+    await act(async () => render(<ProjectsManagementPage />));
+
+    const buttons = screen.getAllByRole("button", { name: /Rename/i });
+    await act(async () => buttons.at(1)!.click());
+
+    const input = screen.getByLabelText(/Name/);
+    await act(async () =>
+      fireEvent.change(input, {
+        target: { value: "A very cool second project" },
+      })
+    );
+
+    const submit = screen.getByRole("button", { name: /Update/i });
+    await act(async () => submit.click());
+
+    expect(
+      OPFSProjectsListingService.updateProjectListingItem
+    ).toHaveBeenCalledWith({
+      uuid: "222-222-222",
+      name: "A very cool second project",
+    });
+  });
 });

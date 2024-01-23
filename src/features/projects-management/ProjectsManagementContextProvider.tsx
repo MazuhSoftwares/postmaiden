@@ -1,8 +1,14 @@
+/**
+ * Manages the project listing.
+ *
+ * HOC to build and inject stateful functions into components through Context.
+ */
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import {
   persistNewProjectListingItem,
   removeProjectListingItem,
   retrieveProjectsListing,
+  updateProjectListingItem,
 } from "./opfs-projects-listing-service";
 import { ProjectListingItem } from "./projects-management-entities";
 import {
@@ -56,9 +62,21 @@ export function ProjectsManagementContextProvider({
     [pullProjectsListing]
   );
 
+  const update: ProjectsManagementContextValue["update"] = useCallback(
+    async (updating: ProjectListingItem) => {
+      setError(null);
+      setIsLoading(true);
+      updateProjectListingItem(updating)
+        .catch((error) => setError(error))
+        .finally(() => setIsLoading(false))
+        .then(() => pullProjectsListing());
+    },
+    [pullProjectsListing]
+  );
+
   return (
     <ProjectsManagementContext.Provider
-      value={{ items, isLoading, isError, create, remove }}
+      value={{ items, isLoading, isError, create, update, remove }}
     >
       {children}
     </ProjectsManagementContext.Provider>

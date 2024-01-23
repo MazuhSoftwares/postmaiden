@@ -1,3 +1,12 @@
+/**
+ * Origin Private File System (OPFS) generic shim adapters.
+ *
+ * It's important for the rest of the application don't use OPFS directly,
+ * because it's a very delicate API with limited compatibility and low
+ * level details.
+ */
+
+/** */
 export interface OriginPrivateFileSystemFileAdapterOptions {
   filename: string;
   subdir?: string;

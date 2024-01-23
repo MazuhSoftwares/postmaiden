@@ -1,3 +1,7 @@
+/**
+ * Implements a client to store and retrieve the current and single
+ * user session for `useClientSession` hook.
+ */
 import { validate as validateUuid } from "uuid";
 import { makeOpfsFileAdapterSingleton } from "./origin-private-file-system";
 

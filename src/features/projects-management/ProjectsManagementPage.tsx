@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolderPlus,
   faLaptopCode,
+  faPenToSquare,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -56,7 +57,7 @@ function ProjectsManagementHeader() {
       <span className="pr-4">
         <FontAwesomeIcon icon={faLaptopCode} /> List of projects
       </span>
-      <ProjectsCreationButton />
+      <ProjectModalByButton />
     </Title>
   );
 }
@@ -81,7 +82,7 @@ function ProjectsList() {
         <p className="mb-2 w-full">No complex forms, don't worry. 😉</p>
         <br />
         <div className="w-full flex justify-center">
-          <ProjectsCreationButton />
+          <ProjectModalByButton />
         </div>
       </div>
     );
@@ -106,6 +107,7 @@ function ProjectsList() {
                 hoveredProject === project.uuid ? "visible" : "invisible"
               )}
             >
+              <ProjectModalByButton project={project} />
               <ProjectRemovalButton project={project} />
             </span>
           </li>
@@ -127,8 +129,12 @@ const projectFormSchema = z.object({
     ),
 });
 
-function ProjectsCreationButton() {
-  const { create } = useProjectsManagement();
+interface ProjectModalByButtonProps {
+  project?: ProjectListingItem;
+}
+
+function ProjectModalByButton(props: ProjectModalByButtonProps) {
+  const { create, update } = useProjectsManagement();
 
   const [isOpen, setIsOpen] = useState(false);
   const open = () => {
@@ -143,25 +149,46 @@ function ProjectsCreationButton() {
   const form = useForm<z.infer<typeof projectFormSchema>>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: {
-      name: "",
+      name: props.project?.name || "",
     },
   });
 
   const handleSubmit = (values: z.infer<typeof projectFormSchema>) => {
-    create(values).then(close);
+    if (props.project) {
+      return update({ ...values, uuid: props.project.uuid }).then(close);
+    }
+
+    return create(values).then(close);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <Button onClick={open}>
-        <FontAwesomeIcon icon={faFolderPlus} />
-        <span className="pl-1">Create project</span>
-      </Button>
+      {props.project ? (
+        <Button onClick={open} variant="outline" title="Rename">
+          <FontAwesomeIcon icon={faPenToSquare} aria-label="Rename" />
+        </Button>
+      ) : (
+        <Button onClick={open}>
+          <FontAwesomeIcon icon={faFolderPlus} />
+          <span className="pl-1">Create project</span>
+        </Button>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <FontAwesomeIcon icon={faFolderPlus} />
-            <span className="pl-1">Project</span>
+            {props.project ? (
+              <>
+                <FontAwesomeIcon icon={faPenToSquare} />
+                <span className="pl-1">
+                  Project: <strong>{props.project.name}</strong>
+                </span>
+              </>
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faFolderPlus} />
+                <span className="pl-1">Project</span>
+              </>
+            )}
           </DialogTitle>
           <DialogDescription>
             A project is a context to store your HTTP requests.
@@ -192,7 +219,11 @@ function ProjectsCreationButton() {
                 <Button variant="outline" onClick={close}>
                   Cancel
                 </Button>
-                <Button type="submit">Create</Button>
+                {props.project ? (
+                  <Button type="submit">Update</Button>
+                ) : (
+                  <Button type="submit">Create</Button>
+                )}
               </DialogFooter>
             </form>
           </FormProvider>
@@ -216,7 +247,7 @@ function ProjectRemovalButton({ project }: { project: ProjectListingItem }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <Button variant="secondary" onClick={open} title="Remove">
+      <Button variant="outline-destructive" onClick={open} title="Remove">
         <FontAwesomeIcon icon={faTrash} aria-label="Remove" />
       </Button>
       <DialogContent>

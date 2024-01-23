@@ -12,6 +12,10 @@ interface UseClientSessionResult {
   isOfflineModeSupported: boolean;
 }
 
+/**
+ * Manage client session, assuring that only one per tab is active,
+ * so it doesn't have to handle conflicts for Private File System access.
+ */
 export default function useClientSession(): UseClientSessionResult {
   const isOfflineModeSupported = isPersistenceSupported();
 
