@@ -1,6 +1,7 @@
 import {
   isPersistenceSupported,
   makeOpfsFileAdapterSingleton,
+  makeOpfsMainDirAdapter,
 } from "./origin-private-file-system";
 
 describe("Origin private file system (OPFS) adapter", () => {
@@ -22,6 +23,8 @@ describe("Origin private file system (OPFS) adapter", () => {
                 close: jest.fn(),
               }),
             }),
+            entries: jest.fn().mockReturnValue([]),
+            removeEntry: jest.fn(),
           }),
         }),
       },
@@ -179,6 +182,88 @@ describe("Origin private file system (OPFS) adapter", () => {
     ).rejects.toEqual(new Error("Writing error!"));
 
     expect(closeMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("Integrates with real OPFS to remove the file", async () => {
+    const removeEntryMock = jest.fn().mockResolvedValue(null);
+
+    Object.defineProperty(global.navigator, "storage", {
+      value: {
+        getDirectory: jest.fn().mockResolvedValue({
+          getDirectoryHandle: jest.fn().mockResolvedValue({
+            getFileHandle: jest.fn().mockResolvedValue({}),
+            removeEntry: removeEntryMock,
+          }),
+        }),
+      },
+      writable: true,
+    });
+
+    const getOpfsAdapter = makeOpfsFileAdapterSingleton<never>({
+      filename: "Chemtrails Over The Country Club.json",
+    });
+    const opfs = await getOpfsAdapter();
+    await opfs.remove();
+
+    expect(removeEntryMock).toHaveBeenCalledTimes(1);
+    expect(removeEntryMock).toHaveBeenCalledWith(
+      "Chemtrails Over The Country Club.json"
+    );
+  });
+
+  it("Integrates with real OPFS to retrieve filenames from a sub diretory", async () => {
+    Object.defineProperty(global.navigator, "storage", {
+      value: {
+        getDirectory: jest.fn().mockResolvedValue({
+          getDirectoryHandle: jest.fn().mockResolvedValue({
+            entries: jest.fn().mockReturnValue([
+              [
+                "ef9edef0-93c1-4097-97d7-450efb8929d3_Carmen.json",
+                { mocked: "handler", wadda: "wadda" },
+              ],
+              [
+                "ef9edef0-93c1-4097-97d7-450efb8929d3_Let me love you like a woman.json",
+                { mocked: "handler", wadda: "wadda" },
+              ],
+            ]),
+          }),
+        }),
+      },
+      writable: true,
+    });
+
+    const opfsDir = await makeOpfsMainDirAdapter({ subdir: "songs" });
+    const filenames = await opfsDir.retrieveFilenames();
+    expect(filenames).toEqual([
+      "ef9edef0-93c1-4097-97d7-450efb8929d3_Carmen.json",
+      "ef9edef0-93c1-4097-97d7-450efb8929d3_Let me love you like a woman.json",
+    ]);
+  });
+
+  it("Integrates with real OPFS to remove entry of filenames", async () => {
+    const removeEntryMock = jest.fn().mockResolvedValue(null);
+
+    Object.defineProperty(global.navigator, "storage", {
+      value: {
+        getDirectory: jest.fn().mockResolvedValue({
+          getDirectoryHandle: jest.fn().mockResolvedValue({
+            entries: jest.fn().mockReturnValue([]),
+            removeEntry: removeEntryMock,
+          }),
+        }),
+      },
+      writable: true,
+    });
+
+    const opfsDir = await makeOpfsMainDirAdapter({ subdir: "songs" });
+    await opfsDir.removeByFilename(
+      "ef9edef0-93c1-4097-97d7-450efb8929d3_Carmen.json"
+    );
+
+    expect(removeEntryMock).toHaveBeenCalledTimes(1);
+    expect(removeEntryMock).toHaveBeenCalledWith(
+      "ef9edef0-93c1-4097-97d7-450efb8929d3_Carmen.json"
+    );
   });
 
   it("Can confirm full support for the offline persistence", () => {
