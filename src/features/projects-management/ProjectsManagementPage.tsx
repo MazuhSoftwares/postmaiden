@@ -33,6 +33,7 @@ import { ProjectListingItem } from "./projects-management-entities";
 import { cn } from "@/lib/utils";
 import { useProjectsManagement } from "./ProjectsManagementContext";
 import { ProjectsManagementContextProvider } from "./ProjectsManagementContextProvider";
+import { useLocation } from "wouter";
 
 export function ProjectsManagementPage() {
   return (
@@ -134,6 +135,7 @@ interface ProjectModalByButtonProps {
 }
 
 function ProjectModalByButton(props: ProjectModalByButtonProps) {
+  const [, setLocation] = useLocation();
   const { create, update } = useProjectsManagement();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -153,12 +155,24 @@ function ProjectModalByButton(props: ProjectModalByButtonProps) {
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof projectFormSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof projectFormSchema>) => {
     if (props.project) {
-      return update({ ...values, uuid: props.project.uuid }).then(close);
+      return update({ ...values, uuid: props.project.uuid })
+        .then(close)
+        .catch(() =>
+          form.setError("name", { message: "Something went wrong" })
+        );
     }
 
-    return create(values).then(close);
+    return create(values).then((created) => {
+      if (!created) {
+        form.setError("name", { message: "Something went wrong" });
+        return;
+      }
+
+      close();
+      setLocation(`/project/${created.uuid}`);
+    });
   };
 
   return (

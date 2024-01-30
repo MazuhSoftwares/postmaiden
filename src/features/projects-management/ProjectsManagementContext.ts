@@ -6,7 +6,9 @@ import { ProjectListingItem } from "./projects-management-entities";
 
 export interface ProjectsManagementContextValue {
   items: ProjectListingItem[];
-  create: (creating: Pick<ProjectListingItem, "name">) => Promise<void>;
+  create: (
+    creating: Pick<ProjectListingItem, "name">
+  ) => Promise<ProjectListingItem | null>;
   update: (updating: ProjectListingItem) => Promise<void>;
   remove: (removing: ProjectListingItem) => Promise<void>;
   isLoading: boolean;

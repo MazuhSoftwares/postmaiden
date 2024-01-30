@@ -42,10 +42,16 @@ export function ProjectsManagementContextProvider({
     async ({ name }) => {
       setError(null);
       setIsLoading(true);
-      persistNewProjectListingItem(name)
-        .catch((error) => setError(error))
-        .finally(() => setIsLoading(false))
-        .then(() => pullProjectsListing());
+      return persistNewProjectListingItem(name)
+        .then((created: ProjectListingItem) => {
+          pullProjectsListing();
+          return created;
+        })
+        .catch((error) => {
+          setError(error);
+          return null;
+        })
+        .finally(() => setIsLoading(false));
     },
     [pullProjectsListing]
   );
