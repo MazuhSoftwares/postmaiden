@@ -110,7 +110,7 @@ export function getListingItemFromFilename(
 export const PROJECTS_OPFS_SUBDIRECTORY = "projects";
 
 function hygienizeProjectName(name: string): string {
-  return name.trim().replace(".json", "");
+  return name.trim().replaceAll(".json", "").replaceAll('"', "");
 }
 
 async function retrieveProjectFilenameByUuid(uuid: string): Promise<string> {

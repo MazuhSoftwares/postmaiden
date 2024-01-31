@@ -45,7 +45,7 @@ export async function createRequestSpec(
 /** Params for `removeRequestSpec` */
 export interface RemoveRequestSpecParams {
   projectUuid: Project["uuid"];
-  removingUuid: ProjectRequestSpec["uuid"];
+  removing: ProjectRequestSpec["uuid"];
 }
 
 /**
@@ -57,11 +57,11 @@ export async function removeRequestSpec(
   const project = await retrieveProject(params.projectUuid);
   const updatedProject: Project = {
     ...project,
-    specs: project.specs.filter((spec) => spec.uuid !== params.removingUuid),
+    specs: project.specs.filter((spec) => spec.uuid !== params.removing),
   };
   await persistProject(updatedProject);
 
-  return { specUuid: params.removingUuid };
+  return { specUuid: params.removing };
 }
 
 /** Params for `patchRequestSpec` */
