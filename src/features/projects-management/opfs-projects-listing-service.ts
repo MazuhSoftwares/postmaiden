@@ -2,15 +2,16 @@
  * Implements project listing service using the Origin Private File System.
  */
 import { v4 as uuidv4 } from "uuid";
-import { Project } from "../../entities/management";
-import {
-  makeOpfsFileAdapter,
-  makeOpfsMainDirAdapter,
-} from "../../services/origin-private-file-system";
+import { makeOpfsMainDirAdapter } from "../../services/origin-private-file-system";
 import {
   ProjectListing,
   ProjectListingItem,
 } from "./projects-management-entities";
+import {
+  persistProject,
+  getListingItemFromFilename,
+  removeProject,
+} from "@/services/opfs-projects-shared-internals";
 
 /**
  * Based on stored filenames in the projects private directory,
@@ -26,21 +27,7 @@ export async function retrieveProjectsListing(): Promise<ProjectListing> {
   });
   const filenames = await opfsDir.retrieveFilenames();
   return {
-    items: filenames.map((filename) => {
-      const rFilename =
-        /(?<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})_(?<name>[A-Za-z ]+)\.json/;
-      const match = filename.match(rFilename);
-      if (!match || !match.groups) {
-        throw new Error(
-          `Invalid project filename (corrupted data?): ${filename}`
-        );
-      }
-
-      return {
-        uuid: match.groups.uuid,
-        name: match.groups.name,
-      };
-    }),
+    items: filenames.map((filename) => getListingItemFromFilename(filename)),
   };
 }
 
@@ -56,10 +43,10 @@ export async function persistNewProjectListingItem(
 
   const item: ProjectListingItem = {
     uuid: uuidv4(),
-    name: hygienizeProjectName(name),
+    name: name,
   };
 
-  await doPersistProject({
+  await persistProject({
     uuid: item.uuid,
     name: item.name,
     sections: [],
@@ -76,14 +63,7 @@ export async function persistNewProjectListingItem(
 export async function removeProjectListingItem(
   project: ProjectListingItem
 ): Promise<{ uuid: string }> {
-  const file = await makeOpfsFileAdapter<never>({
-    filename: getFilename(project),
-    subdir: PROJECTS_OPFS_SUBDIRECTORY,
-  });
-
-  await file.remove();
-
-  return { uuid: project.uuid };
+  return removeProject(project.uuid);
 }
 
 /**
@@ -106,7 +86,7 @@ export async function updateProjectListingItem(
 
   const item: ProjectListingItem = {
     uuid: updating.uuid,
-    name: hygienizeProjectName(updating.name),
+    name: updating.name,
   };
 
   const listing = await retrieveProjectsListing();
@@ -115,7 +95,7 @@ export async function updateProjectListingItem(
     throw new Error("Project being updated is stale.");
   }
 
-  await doPersistProject({
+  await persistProject({
     ...found,
     ...item,
     // TODO: this is erasing previous sections and requests.
@@ -129,20 +109,3 @@ export async function updateProjectListingItem(
 }
 
 export const PROJECTS_OPFS_SUBDIRECTORY = "projects";
-
-function hygienizeProjectName(name: string): string {
-  return name.trim().replace(".json", "");
-}
-
-async function doPersistProject(project: Project): Promise<void> {
-  const file = await makeOpfsFileAdapter<Project>({
-    filename: getFilename(project),
-    subdir: PROJECTS_OPFS_SUBDIRECTORY,
-  });
-
-  await file.persist(project);
-}
-
-function getFilename(item: ProjectListingItem): string {
-  return `${item.uuid}_${item.name}.json`;
-}

@@ -74,6 +74,15 @@ describe("OPFS project listing service", () => {
   });
 
   it("can remove a project by quering the specific file within the directory", async () => {
+    (opfsAdapters.makeOpfsMainDirAdapter as jest.Mock).mockResolvedValueOnce({
+      retrieveFilenames: jest
+        .fn()
+        .mockResolvedValue([
+          "82184240-6b29-4ae8-82f5-fbe7d1bb814a_Other random API.json",
+          "73aa5920-55e6-4275-b193-a9a9ad5de15d_LoL API with other persisted name.json",
+        ]),
+    });
+
     const removeMock = jest.fn();
     (opfsAdapters.makeOpfsFileAdapter as jest.Mock).mockResolvedValueOnce({
       remove: removeMock,
@@ -86,7 +95,8 @@ describe("OPFS project listing service", () => {
     expect(result).toEqual({ uuid: "73aa5920-55e6-4275-b193-a9a9ad5de15d" });
 
     expect(opfsAdapters.makeOpfsFileAdapter).toHaveBeenCalledWith({
-      filename: "73aa5920-55e6-4275-b193-a9a9ad5de15d_LoL API.json",
+      filename:
+        "73aa5920-55e6-4275-b193-a9a9ad5de15d_LoL API with other persisted name.json",
       subdir: "projects",
     });
     expect(removeMock).toHaveBeenCalledTimes(1);

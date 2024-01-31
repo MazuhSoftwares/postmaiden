@@ -25,6 +25,7 @@ module.exports = {
             alias: {
               "@/components": "./src/components",
               "@/lib/utils": "./src/lib/utils",
+              "@/services": "./src/services",
             },
           },
         ],
