@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import { useParams } from "wouter";
 import { validate as validateUuid } from "uuid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -10,12 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { AppPageTemplate } from "@/components/template/AppPageTemplate";
 import { Anchor, Title } from "@/components/ui/typography";
-import { Project, ProjectRequestSpec } from "@/entities/management";
-import {
-  createRequestSpec,
-  removeRequestSpec,
-  retrieveProject,
-} from "./opfs-project-service";
+import { ProjectRequestSpec } from "@/entities/management";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -26,31 +21,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RequestsSpecsContextProvider } from "./RequestsSpecsContextProvider";
+import { useRequestsSpecs } from "./RequestsSpecsContext";
 
 export function ProjectWorkspacePage() {
   const params = useParams();
-  const projectUUID = validateUuid(params.uuid || "") ? params.uuid : "";
+  const projectUuid = validateUuid(params.uuid || "") ? params.uuid : "";
 
-  const [project, setProject] = useState<Project>();
-
-  useEffect(() => {
-    if (!projectUUID) {
-      return;
-    }
-
-    const runProjectRetrieval = () => {
-      retrieveProject(projectUUID)
-        .then((retrieved) => setProject(retrieved))
-        .catch((error) => console.error("Error retrieving project.", error));
-    };
-
-    runProjectRetrieval();
-
-    const worker = setInterval(() => runProjectRetrieval(), 500);
-    return () => clearInterval(worker);
-  }, [projectUUID]);
-
-  if (!projectUUID) {
+  if (!projectUuid) {
     return (
       <AppPageTemplate>
         <Title>Invalid project URL</Title>
@@ -62,28 +40,28 @@ export function ProjectWorkspacePage() {
     );
   }
 
-  if (!project) {
-    return null;
-  }
-
   return (
-    <AppPageTemplate>
-      <p>
-        <Anchor href="/">
-          <small>
-            <FontAwesomeIcon icon={faArrowLeft} />{" "}
-            <span>Back to Projects selection</span>
-          </small>
-        </Anchor>
-      </p>
-      <WorkspaceHeader project={project} />
-      <RequestsSpecsList project={project} />
-    </AppPageTemplate>
+    <RequestsSpecsContextProvider projectUuid={projectUuid}>
+      <AppPageTemplate>
+        <p>
+          <Anchor href="/">
+            <small>
+              <FontAwesomeIcon icon={faArrowLeft} />{" "}
+              <span>Back to Projects selection</span>
+            </small>
+          </Anchor>
+        </p>
+        <WorkspaceHeader />
+        <RequestsSpecsList />
+      </AppPageTemplate>
+    </RequestsSpecsContextProvider>
   );
 }
 
-function WorkspaceHeader(props: { project: Project }) {
-  if (!props.project.specs.length) {
+function WorkspaceHeader() {
+  const { projectName, specs } = useRequestsSpecs();
+
+  if (!specs.length) {
     return null;
   }
 
@@ -91,29 +69,28 @@ function WorkspaceHeader(props: { project: Project }) {
     <Title>
       <FontAwesomeIcon icon={faFolderOpen} />
       <span className="pl-1">
-        Project workspace:{" "}
-        <code className="px-2" title={props.project.uuid}>
-          {props.project.name}
-        </code>
-        <CreateRequestSpecButton projectUuid={props.project.uuid} />
+        Project workspace: <code className="px-2">{projectName}</code>
+        <CreateRequestSpecButton />
       </span>
     </Title>
   );
 }
 
-function RequestsSpecsList(props: { project: Project }) {
+function RequestsSpecsList() {
+  const { projectName, specs } = useRequestsSpecs();
+
   const [hovered, setHovered] = useState<string | null>(null);
 
-  if (props.project.specs.length === 0) {
+  if (specs.length === 0) {
     return (
       <div className="w-fit m-auto flex flex-col text-center">
         <Title>✨ Created. ✨</Title>
         <p className="mb-2 w-full text-center">
-          <em>{props.project.name}</em>
+          <em>{projectName}</em>
         </p>
         <br />
         <div className="w-full flex justify-center">
-          <CreateRequestSpecButton projectUuid={props.project.uuid} />
+          <CreateRequestSpecButton />
         </div>
       </div>
     );
@@ -122,7 +99,7 @@ function RequestsSpecsList(props: { project: Project }) {
   return (
     <div>
       <ul className="list-disc pl-4 mt-2">
-        {props.project.specs.map((spec) => (
+        {specs.map((spec) => (
           <li
             key={spec.uuid}
             onMouseEnter={() => setHovered(spec.uuid)}
@@ -137,10 +114,7 @@ function RequestsSpecsList(props: { project: Project }) {
                 hovered === spec.uuid ? "visible" : "invisible"
               )}
             >
-              <RequestSpecRemovalButton
-                projectUuid={props.project.uuid}
-                spec={spec}
-              />
+              <RequestSpecRemovalButton spec={spec} />
             </span>
           </li>
         ))}
@@ -149,9 +123,10 @@ function RequestsSpecsList(props: { project: Project }) {
   );
 }
 
-function CreateRequestSpecButton(props: { projectUuid: string }) {
-  const handleClick = () =>
-    createRequestSpec({ projectUuid: props.projectUuid });
+function CreateRequestSpecButton() {
+  const { create } = useRequestsSpecs();
+
+  const handleClick = () => create();
 
   return (
     <Button onClick={handleClick}>
@@ -161,20 +136,16 @@ function CreateRequestSpecButton(props: { projectUuid: string }) {
   );
 }
 
-function RequestSpecRemovalButton(props: {
-  projectUuid: string;
-  spec: ProjectRequestSpec;
-}) {
+function RequestSpecRemovalButton(props: { spec: ProjectRequestSpec }) {
+  const { remove } = useRequestsSpecs();
+
   const [isOpen, setIsOpen] = useState(false);
   const open = () => setIsOpen(true);
   const close = () => setIsOpen(false);
 
   const handleSubmit = (event: SyntheticEvent) => {
     event.preventDefault();
-    removeRequestSpec({
-      projectUuid: props.projectUuid,
-      removing: props.spec.uuid,
-    }).then(close);
+    remove(props.spec).then(close);
   };
 
   return (

@@ -7,9 +7,8 @@ import type {
   ProjectRequestSpec,
   ProjectRequestSpecHeader,
 } from "@/entities/management";
-import { retrieveProject } from "./opfs-project-service";
 import { persistProject } from "@/services/opfs-projects-shared-internals";
-import debounce from "lodash.debounce";
+import { retrieveProject } from "./opfs-project-service";
 
 export { retrieveProject } from "@/services/opfs-projects-shared-internals";
 
@@ -71,13 +70,10 @@ export interface PatchRequestSpecParams {
 }
 
 /**
- * Update a spec in the project.
- *
- * Debounced.
+ * Patchs a spec in the project. Omitted keys will
+ * be preserve its original value.
  */
-export const patchRequestSpec = debounce(doPatchRequestSpec, 300);
-
-async function doPatchRequestSpec(
+export async function patchRequestSpec(
   params: PatchRequestSpecParams
 ): Promise<ProjectRequestSpec> {
   const project = await retrieveProject(params.projectUuid);
@@ -91,7 +87,14 @@ async function doPatchRequestSpec(
   };
   await persistProject(updatedProject);
 
-  return params.patching as ProjectRequestSpec;
+  const updatedSpec = updatedProject.specs.find(
+    (spec) => spec.uuid === params.patching.uuid
+  );
+  if (!updatedSpec) {
+    throw new Error("Request spec not found when patching.");
+  }
+
+  return updatedSpec;
 }
 
 const DEFAULT_REQUEST_SPEC_HEADERS: readonly ProjectRequestSpecHeader[] = [

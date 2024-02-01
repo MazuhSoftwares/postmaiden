@@ -25,7 +25,7 @@ export function ProjectsManagementContextProvider({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setError] = useState<Error | null>(null);
 
-  const pullProjectsListing = useCallback(async () => {
+  const loadProjectsListing = useCallback(async () => {
     setError(null);
     setIsLoading(true);
     retrieveProjectsListing()
@@ -35,8 +35,8 @@ export function ProjectsManagementContextProvider({
   }, []);
 
   useEffect(() => {
-    pullProjectsListing();
-  }, [pullProjectsListing]);
+    loadProjectsListing();
+  }, [loadProjectsListing]);
 
   const create: ProjectsManagementContextValue["create"] = useCallback(
     async ({ name }) => {
@@ -44,7 +44,7 @@ export function ProjectsManagementContextProvider({
       setIsLoading(true);
       return persistNewProjectListingItem(name)
         .then((created: ProjectListingItem) => {
-          pullProjectsListing();
+          loadProjectsListing();
           return created;
         })
         .catch((error) => {
@@ -53,7 +53,7 @@ export function ProjectsManagementContextProvider({
         })
         .finally(() => setIsLoading(false));
     },
-    [pullProjectsListing]
+    [loadProjectsListing]
   );
 
   const remove: ProjectsManagementContextValue["remove"] = useCallback(
@@ -63,9 +63,9 @@ export function ProjectsManagementContextProvider({
       removeProjectListingItem(removing)
         .catch((error) => setError(error))
         .finally(() => setIsLoading(false))
-        .then(() => pullProjectsListing());
+        .then(() => loadProjectsListing());
     },
-    [pullProjectsListing]
+    [loadProjectsListing]
   );
 
   const update: ProjectsManagementContextValue["update"] = useCallback(
@@ -75,9 +75,9 @@ export function ProjectsManagementContextProvider({
       updateProjectListingItem(updating)
         .catch((error) => setError(error))
         .finally(() => setIsLoading(false))
-        .then(() => pullProjectsListing());
+        .then(() => loadProjectsListing());
     },
-    [pullProjectsListing]
+    [loadProjectsListing]
   );
 
   return (
