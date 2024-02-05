@@ -32,7 +32,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     });
   });
 
-  it("Can generate specific singletons (for more pragmatic usage)", async () => {
+  it("can generate specific singletons (for more pragmatic usage)", async () => {
     const getOpfsAdapter = makeOpfsFileAdapterSingleton<string>({
       filename: "something-in-the-way.txt",
     });
@@ -41,7 +41,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     expect(opfs1).toBe(opfs2);
   });
 
-  it("Necessarily means that two different specific singletons are indeed different references", async () => {
+  it("necessarily means that two different specific singletons are indeed different references", async () => {
     const getOpfsAdapter1 = makeOpfsFileAdapterSingleton<string>({
       filename: "the-man-who-sold-the-world.txt",
     });
@@ -55,7 +55,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     expect(opfs1).not.toBe(opfs2);
   });
 
-  it("Integrates with real OPFS to retrieve parsed JSON content", async () => {
+  it("integrates with real OPFS to retrieve parsed JSON content", async () => {
     const getFileHandleMock = jest.fn().mockResolvedValue({
       getFile: jest.fn().mockResolvedValue({
         text: jest
@@ -88,7 +88,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     });
   });
 
-  it("Retrieves null if there is no content on a given file", async () => {
+  it("retrieves null if there is no content on a given file", async () => {
     Object.defineProperty(global.navigator, "storage", {
       value: {
         getDirectory: jest.fn().mockResolvedValue({
@@ -113,7 +113,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     expect(retrieved).toEqual(null);
   });
 
-  it("Integrates with real OPFS to persist JSON content", async () => {
+  it("integrates with real OPFS to persist JSON content", async () => {
     const writeMock = jest.fn();
     const closeMock = jest.fn();
     const getFileHandleMock = jest.fn().mockResolvedValue({
@@ -150,7 +150,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     expect(closeMock).toHaveBeenCalledTimes(1);
   });
 
-  it("Closes the writable even if an error is throwed in the writing side effect", async () => {
+  it("closes the writable even if an error is throwed in the writing side effect", async () => {
     const writeMock = jest.fn().mockRejectedValue(new Error("Writing error!"));
     const closeMock = jest.fn();
     const getFileHandleMock = jest.fn().mockResolvedValue({
@@ -184,7 +184,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     expect(closeMock).toHaveBeenCalledTimes(1);
   });
 
-  it("Integrates with real OPFS to remove the file", async () => {
+  it("integrates with real OPFS to remove the file", async () => {
     const removeEntryMock = jest.fn().mockResolvedValue(null);
 
     Object.defineProperty(global.navigator, "storage", {
@@ -211,7 +211,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     );
   });
 
-  it("Integrates with real OPFS to retrieve filenames from a sub diretory", async () => {
+  it("integrates with real OPFS to retrieve filenames from a sub diretory", async () => {
     Object.defineProperty(global.navigator, "storage", {
       value: {
         getDirectory: jest.fn().mockResolvedValue({
@@ -240,7 +240,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     ]);
   });
 
-  it("Integrates with real OPFS to remove entry of filenames", async () => {
+  it("integrates with real OPFS to remove entry of filenames", async () => {
     const removeEntryMock = jest.fn().mockResolvedValue(null);
 
     Object.defineProperty(global.navigator, "storage", {
@@ -266,7 +266,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     );
   });
 
-  it("Can confirm full support for the offline persistence", () => {
+  it("can confirm full support for the offline persistence", () => {
     Object.defineProperty(window, "FileSystemFileHandle", {
       value: {
         prototype: {
@@ -279,7 +279,7 @@ describe("Origin private file system (OPFS) adapter", () => {
     expect(isPersistenceSupported()).toBe(true);
   });
 
-  it("Can detect lack of full support for the offline persistence: writable async", () => {
+  it("can detect lack of full support for the offline persistence: writable async", () => {
     Object.defineProperty(window, "FileSystemFileHandle", {
       value: {
         prototype: {},

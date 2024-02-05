@@ -28,12 +28,12 @@ describe("App", () => {
     }));
   });
 
-  it("Renders fine at first", async () => {
+  it("renders fine at first", async () => {
     render(<App />);
     screen.getByText(/Postmaiden/i);
   });
 
-  it("Suspends interaction if persisted session changes", async () => {
+  it("suspends interaction if persisted session changes", async () => {
     render(<App />);
 
     await act(() => jest.runAllTimers());
@@ -52,7 +52,7 @@ describe("App", () => {
     ).toBeVisible();
   });
 
-  it("Blocks interaction if browser doesnt support the offline persistence", () => {
+  it("blocks interaction if browser doesnt support the offline persistence", () => {
     (isPersistenceSupported as jest.Mock).mockReturnValue(false);
 
     render(<App />);

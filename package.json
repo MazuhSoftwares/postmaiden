@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test": "jest --coverage --silent=true",
+    "test": "jest --ci --coverage --verbose --silent=true",
+    "test:watch": "jest --silent=true --watch",
     "test:verbose": "DEBUG_PRINT_LIMIT=9999999 npm run test -- --silent=false",
     "preview": "vite preview"
   },

@@ -3,7 +3,8 @@
  *
  * It's important for the rest of the application don't use OPFS directly,
  * because it's a very delicate API with limited compatibility and low
- * level details.
+ * level details. So for all other components and services using
+ * OPFS this must be the lowest level of abstraction.
  */
 
 /** */

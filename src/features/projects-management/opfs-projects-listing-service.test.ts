@@ -1,3 +1,4 @@
+import * as uuid from "uuid";
 import {
   retrieveProjectsListing,
   persistNewProjectListingItem,
@@ -5,11 +6,10 @@ import {
   updateProjectListingItem,
 } from "./opfs-projects-listing-service";
 import * as opfsAdapters from "../../services/origin-private-file-system";
-import * as uuid from "uuid";
-
-jest.mock("../../services/origin-private-file-system");
 
 jest.mock("uuid");
+
+jest.mock("../../services/origin-private-file-system");
 
 describe("OPFS project listing service", () => {
   beforeEach(() => {

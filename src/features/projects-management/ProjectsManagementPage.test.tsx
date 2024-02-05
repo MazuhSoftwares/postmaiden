@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { ProjectsManagementPage } from "./ProjectsManagementPage";
 import * as OPFSProjectsListingService from "./opfs-projects-listing-service";
 
-describe("Projects listing management page", () => {
+describe("Projects listing page", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -20,7 +20,7 @@ describe("Projects listing management page", () => {
     expect(screen.getByText(/Start now/i)).toBeVisible();
   });
 
-  it("lists projects", async () => {
+  it("lists projects by retrieving from OPFS", async () => {
     jest
       .spyOn(OPFSProjectsListingService, "retrieveProjectsListing")
       .mockResolvedValue({
@@ -42,7 +42,7 @@ describe("Projects listing management page", () => {
     expect(screen.getByText(/Some third thing/i)).toBeVisible();
   });
 
-  it("can create new project", async () => {
+  it("can create new project by storing it in OPFS", async () => {
     jest
       .spyOn(OPFSProjectsListingService, "retrieveProjectsListing")
       .mockResolvedValue({
@@ -69,7 +69,7 @@ describe("Projects listing management page", () => {
     ).toHaveBeenCalledWith("My favorite API");
   });
 
-  it("can remove a project", async () => {
+  it("can remove a project by removing the file from OPFS", async () => {
     jest
       .spyOn(OPFSProjectsListingService, "retrieveProjectsListing")
       .mockResolvedValue({
@@ -91,7 +91,7 @@ describe("Projects listing management page", () => {
     ).toHaveBeenCalledWith({ uuid: "123-123-123", name: "Some random API" });
   });
 
-  it("can update a project in a modal", async () => {
+  it("can update a project in a modal by persisting a updated version of it in OPFS", async () => {
     jest
       .spyOn(OPFSProjectsListingService, "retrieveProjectsListing")
       .mockResolvedValue({
