@@ -116,7 +116,7 @@ function hygienizeProjectName(name: string): string {
       // just avoiding confusing/ugly trailing spaces:
       .trim()
       // possibly offends our regex of listing retrieval:
-      .replaceAll(/.json$/i, "")
+      .replaceAll(/.json$/gi, "")
       // possibly offends our regex of listing retrieval:
       .replaceAll('"', "")
       // throws error on OPFS:
