@@ -130,7 +130,7 @@ describe("OPFS project listing service", () => {
     expect(removeMock).toHaveBeenCalled();
   });
 
-  it("throws error if retrieved filenames are corrupted with invalid patterns", async () => {
+  it("ignore retrieved filenames corrupted with invalid patterns", async () => {
     (opfsAdapters.makeOpfsMainDirAdapter as jest.Mock).mockResolvedValueOnce({
       retrieveFilenames: jest
         .fn()
@@ -140,10 +140,10 @@ describe("OPFS project listing service", () => {
         ]),
     });
 
-    await expect(() => retrieveProjectsListing()).rejects.toEqual(
-      new Error(
-        "Invalid project filename (corrupted data?): 91599476-833d-invaliduuid-826b-8fe768fad0bf_My cool API.json"
-      )
-    );
+    const listing = await retrieveProjectsListing();
+
+    expect(listing).toEqual({
+      items: [{ name: "MyAPI", uuid: "82184240-6b29-4ae8-82f5-fbe7d1bb814a" }],
+    });
   });
 });

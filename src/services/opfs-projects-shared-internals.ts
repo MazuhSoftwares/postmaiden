@@ -90,12 +90,13 @@ export function getProjectFilename(
  */
 export function getListingItemFromFilename(
   filename: string
-): Pick<Project, "uuid" | "name"> {
+): Pick<Project, "uuid" | "name"> | null {
   const rFilename =
-    /(?<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})_(?<name>[A-Za-z ]+)\.json/;
+    /^(?<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})_(?<name>[A-Za-z 0-9]+)\.json$/;
   const match = filename.match(rFilename);
   if (!match || !match.groups) {
-    throw new Error(`Invalid project filename (corrupted data?): ${filename}`);
+    console.error(`Invalid project filename (corrupted data?): ${filename}`);
+    return null;
   }
 
   return {
@@ -110,13 +111,23 @@ export function getListingItemFromFilename(
 export const PROJECTS_OPFS_SUBDIRECTORY = "projects";
 
 function hygienizeProjectName(name: string): string {
-  return name.trim().replaceAll(".json", "").replaceAll('"', "");
+  return (
+    name
+      // just avoiding confusing/ugly trailing spaces:
+      .trim()
+      // possibly offends our regex of listing retrieval:
+      .replaceAll(/.json$/i, "")
+      // possibly offends our regex of listing retrieval:
+      .replaceAll('"', "")
+      // throws error on OPFS:
+      .replaceAll("/", " ")
+  );
 }
 
 async function retrieveProjectFilenameByUuid(uuid: string): Promise<string> {
   const allFilenames = await retrieveProjectsFilenames();
   const filename = allFilenames.find(
-    (filename) => getListingItemFromFilename(filename).uuid === uuid
+    (filename) => getListingItemFromFilename(filename)?.uuid === uuid
   );
 
   if (!filename) {

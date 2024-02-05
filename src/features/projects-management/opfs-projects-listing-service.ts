@@ -27,7 +27,12 @@ export async function retrieveProjectsListing(): Promise<ProjectListing> {
   });
   const filenames = await opfsDir.retrieveFilenames();
   return {
-    items: filenames.map((filename) => getListingItemFromFilename(filename)),
+    items: filenames
+      .reduce(
+        (acc, filename) => [...acc, getListingItemFromFilename(filename)],
+        [] as (ProjectListingItem | null)[]
+      )
+      .filter((it) => it !== null) as ProjectListingItem[],
   };
 }
 
