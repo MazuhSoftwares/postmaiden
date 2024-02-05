@@ -136,3 +136,14 @@ export function isPersistenceSupported(): boolean {
 }
 
 export const MAIN_OPFS_DIRECTORY = "postmaiden.com";
+
+if (["production", "development"].includes(process.env.NODE_ENV || "?")) {
+  // expose internals, mostly just for fun.
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).isPersistenceSupported = isPersistenceSupported;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).makeOpfsMainDirAdapter = makeOpfsMainDirAdapter;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).makeOpfsFileAdapter = makeOpfsFileAdapter;
+}
