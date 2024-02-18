@@ -1,4 +1,5 @@
-import { SyntheticEvent, useState } from "react";
+import { useState, useRef, SyntheticEvent } from "react";
+import debounce from "lodash/debounce";
 import { useParams } from "wouter";
 import { validate as validateUuid } from "uuid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,6 +24,14 @@ import {
 } from "@/components/ui/dialog";
 import { RequestsSpecsContextProvider } from "./RequestsSpecsContextProvider";
 import { useRequestsSpecs } from "./RequestsSpecsContext";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function ProjectWorkspacePage() {
   const params = useParams();
@@ -52,9 +61,25 @@ export function ProjectWorkspacePage() {
           </Anchor>
         </p>
         <WorkspaceHeader />
-        <RequestsSpecsList />
+        <WorkspaceBody />
       </AppPageTemplate>
     </RequestsSpecsContextProvider>
+  );
+}
+
+function WorkspaceBody() {
+  const [selectedSpec, setSelectedSpec] = useState<
+    ProjectRequestSpec["uuid"] | null
+  >(null);
+
+  return (
+    <WorkspaceContainer>
+      <RequestsSpecsList
+        selected={selectedSpec}
+        setSelected={setSelectedSpec}
+      />
+      <RequestSpecEditor specUuid={selectedSpec} />
+    </WorkspaceContainer>
   );
 }
 
@@ -76,10 +101,8 @@ function WorkspaceHeader() {
   );
 }
 
-function RequestsSpecsList() {
+function WorkspaceContainer({ children }: { children: React.ReactNode }) {
   const { projectName, specs } = useRequestsSpecs();
-
-  const [hovered, setHovered] = useState<string | null>(null);
 
   if (specs.length === 0) {
     return (
@@ -96,23 +119,45 @@ function RequestsSpecsList() {
     );
   }
 
+  return <div className="flex flex-row w-100 h-full">{children}</div>;
+}
+
+function RequestsSpecsList(props: {
+  selected: string | null;
+  setSelected: (uuid: string | null) => void;
+}) {
+  const { specs } = useRequestsSpecs();
+
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  const handleSpecClickFn = (spec: ProjectRequestSpec) => () => {
+    if (props.selected === spec.uuid) {
+      props.setSelected(null);
+    } else {
+      props.setSelected(spec.uuid);
+    }
+  };
+
   return (
-    <div>
-      <ul className="list-disc pl-4 mt-2">
+    <div className="w-1/5 min-w-[250px] max-w-sm flex-shrink-0 pr-3">
+      <ul className="list-disc mt-2">
         {specs.map((spec) => (
           <li
             key={spec.uuid}
             onMouseEnter={() => setHovered(spec.uuid)}
             onMouseLeave={() => setHovered(null)}
+            onClick={handleSpecClickFn(spec)}
+            className={cn(
+              "cursor-pointer flex justify-between items-center px-3",
+              "hover:bg-accent",
+              props.selected === spec.uuid ? "bg-accent" : ""
+            )}
           >
             <span className="py-4">
               <RequestSpecText spec={spec} />
             </span>
             <span
-              className={cn(
-                "ml-5",
-                hovered === spec.uuid ? "visible" : "invisible"
-              )}
+              className={cn(hovered === spec.uuid ? "visible" : "invisible")}
             >
               <RequestSpecRemovalButton spec={spec} />
             </span>
@@ -122,6 +167,110 @@ function RequestsSpecsList() {
     </div>
   );
 }
+
+function RequestSpecEditor(props: {
+  specUuid: ProjectRequestSpec["uuid"] | null;
+}) {
+  const { specs, patch } = useRequestsSpecs();
+  const spec = specs.find((s) => s.uuid === props.specUuid) || null;
+
+  const patchUrlUnsafelly = (patching: { uuid: string; url: string }) => {
+    patch(patching);
+  };
+
+  const patchUrlRef = useRef<typeof patchUrlUnsafelly>(
+    debounce(patchUrlUnsafelly, 500)
+  );
+  const patchUrl = patchUrlRef.current;
+
+  const [isRunInProgress, setIsRunInProgress] = useState(false);
+  const [hadRanOk, setRanOk] = useState<boolean | null>(null);
+  const runSpec = async (running: { method: string; url: string }) => {
+    setRanOk(null);
+    setIsRunInProgress(true);
+    try {
+      await fetch(running.url, {
+        method: running.method,
+      });
+      setRanOk(true);
+    } catch (error) {
+      setRanOk(false);
+    } finally {
+      setIsRunInProgress(false);
+    }
+  };
+
+  if (spec === null) {
+    return null;
+  }
+
+  const handleUrlValueChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const url = event.currentTarget.value;
+    patchUrl({ uuid: spec.uuid, url });
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const method = (
+      event.currentTarget.elements.namedItem("method") as HTMLInputElement
+    ).value;
+    const url = (
+      event.currentTarget.elements.namedItem("url") as HTMLInputElement
+    ).value;
+    runSpec({ method, url });
+  };
+
+  return (
+    <div className="flex flex-col flex-grow px-5 py-3 border-2 h-full">
+      <form className="flex" onSubmit={handleSubmit}>
+        <Select defaultValue={spec.method} name="method" required>
+          <SelectTrigger aria-label="Method" className="w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {HTTP_METHODS.map((method) => (
+              <SelectItem
+                key={method}
+                value={method}
+                disabled={method !== "GET"}
+              >
+                {method}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          type="url"
+          aria-label="URL"
+          name="url"
+          placeholder="Enter URL here..."
+          autoComplete="off"
+          spellCheck={false}
+          maxLength={2083}
+          className="mx-3 w-full"
+          defaultValue={spec.url || ""}
+          onChange={handleUrlValueChange}
+          required
+        />
+        <Button type="submit">Run</Button>
+      </form>
+      <p className="mt-5">
+        {isRunInProgress && <span className="text-accent">Running...</span>}
+        {hadRanOk === true && <span className="text-green-500">Ok.</span>}
+        {hadRanOk === false && <span className="text-destructive">Error.</span>}
+      </p>
+    </div>
+  );
+}
+
+const HTTP_METHODS: Array<ProjectRequestSpec["method"]> = [
+  "GET",
+  "POST",
+  "PUT",
+  "PATCH",
+  "DELETE",
+] as const;
 
 function CreateRequestSpecButton() {
   const { create } = useRequestsSpecs();
