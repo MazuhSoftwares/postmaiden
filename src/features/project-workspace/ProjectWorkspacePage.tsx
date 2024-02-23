@@ -1,4 +1,4 @@
-import { useState, useRef, SyntheticEvent } from "react";
+import { useState, useRef, SyntheticEvent, useEffect } from "react";
 import debounce from "lodash/debounce";
 import { useParams } from "wouter";
 import { validate as validateUuid } from "uuid";
@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 
 export function ProjectWorkspacePage() {
   const params = useParams();
@@ -186,20 +187,69 @@ function RequestSpecEditor(props: {
   );
   const patchUrl = patchUrlRef.current;
 
-  const [isRunInProgress, setIsRunInProgress] = useState(false);
-  const [hadRanOk, setRanOk] = useState<boolean | null>(null);
+  const [runtime, setRuntime] = useState<{
+    step: "idle" | "running" | "success" | "unsuccess" | "error";
+    text: string;
+    status: number;
+    startedAt: number;
+    finishedAt: number;
+  }>({
+    step: "idle",
+    text: "",
+    status: 0,
+    startedAt: 0,
+    finishedAt: 0,
+  });
+
+  const begin = () =>
+    setRuntime({
+      step: "running",
+      text: "",
+      status: 0,
+      startedAt: Date.now(),
+      finishedAt: 0,
+    });
+
+  const success = (text: string, status: number) =>
+    setRuntime((updatingRuntime) => ({
+      ...updatingRuntime,
+      step: "success",
+      status,
+      text,
+      finishedAt: Date.now(),
+    }));
+
+  const unsuccess = (text: string, status: number) =>
+    setRuntime((updatingRuntime) => ({
+      ...updatingRuntime,
+      step: "unsuccess",
+      text,
+      status,
+      finishedAt: Date.now(),
+    }));
+
+  const error = (text: string) =>
+    setRuntime((updatingRuntime) => ({
+      ...updatingRuntime,
+      step: "error",
+      text,
+      finishedAt: Date.now(),
+    }));
+
   const runSpec = async (running: { method: string; url: string }) => {
-    setRanOk(null);
-    setIsRunInProgress(true);
+    begin();
     try {
-      await fetch(running.url, {
+      const response = await fetch(running.url, {
         method: running.method,
       });
-      setRanOk(true);
-    } catch (error) {
-      setRanOk(false);
-    } finally {
-      setIsRunInProgress(false);
+      const text = await response.text();
+      if (response.ok) {
+        success(text, response.status);
+      } else {
+        unsuccess(text, response.status);
+      }
+    } catch (exception) {
+      error((exception as Error).message);
     }
   };
 
@@ -258,13 +308,91 @@ function RequestSpecEditor(props: {
         />
         <Button type="submit">Run</Button>
       </form>
-      <p className="mt-5">
-        {isRunInProgress && <span className="text-accent">Running...</span>}
-        {hadRanOk === true && <span className="text-green-500">Ok.</span>}
-        {hadRanOk === false && <span className="text-destructive">Error.</span>}
-      </p>
+      <div className="mt-5">
+        {runtime.step === "running" && <RuntimeProgressBar />}
+        {runtime.step === "success" && (
+          <>
+            <p className="text-green-400 mb-3">
+              <strong>HTTP success:</strong> <code>{runtime.status}</code>
+            </p>
+            {runtime.text ? (
+              <p>
+                <code>{runtime.text}</code>
+              </p>
+            ) : (
+              <p>
+                But <strong>empty</strong> body.
+              </p>
+            )}
+          </>
+        )}
+        {runtime.step === "unsuccess" && (
+          <>
+            <p className="text-red-400 mb-3">
+              <strong>HTTP bad code:</strong> <code>{runtime.status}</code>
+            </p>
+            {runtime.text ? (
+              <p>
+                <code>{runtime.text}</code>
+              </p>
+            ) : (
+              <p>
+                For <strong>unknown</strong> reasons.
+              </p>
+            )}
+          </>
+        )}
+        {runtime.step === "error" && (
+          <>
+            <p className="text-red-400 mb-3">Error.</p>
+            {runtime.text ? (
+              <p>
+                <strong>Browser reason:</strong> <code>{runtime.text}</code>
+              </p>
+            ) : (
+              <p>
+                For <strong>unknown</strong> reasons.
+              </p>
+            )}
+            <p>
+              This error was thrown by the browser, not the server.
+              <br />
+              Open your browser console, run the request again and check if
+              there are more evidences.
+            </p>
+          </>
+        )}
+        {runtime.finishedAt > 0 && (
+          <p className="mt-3 text-xs text-gray-500">
+            {runtime.step.toUpperCase()} in{" "}
+            {runtime.finishedAt - runtime.startedAt}ms. Started at{" "}
+            {new Date(runtime.startedAt).toLocaleTimeString("en-US")}.
+          </p>
+        )}
+      </div>
     </div>
   );
+}
+
+export function RuntimeProgressBar() {
+  const [progress, setProgress] = useState(13);
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setProgress(42), 200),
+      setTimeout(() => setProgress(66), 500),
+      setTimeout(() => setProgress(80), 2000),
+      setTimeout(() => setProgress(85), 3000),
+      setTimeout(() => setProgress(90), 4000),
+      setTimeout(() => setProgress(95), 5000),
+    ];
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
+  }, []);
+
+  return <Progress value={progress} className="w-[60%] m-auto" />;
 }
 
 const HTTP_METHODS: Array<ProjectRequestSpec["method"]> = [
