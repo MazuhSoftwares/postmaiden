@@ -78,7 +78,7 @@ function WorkspaceBody() {
         selected={selectedSpec}
         setSelected={setSelectedSpec}
       />
-      <RequestSpecEditor specUuid={selectedSpec} />
+      <RequestSpecEditor key={selectedSpec} specUuid={selectedSpec} />
     </WorkspaceContainer>
   );
 }
@@ -139,11 +139,12 @@ function RequestsSpecsList(props: {
   };
 
   return (
-    <div className="w-1/5 min-w-[250px] max-w-sm flex-shrink-0 pr-3">
+    <div className="w-[280px] flex-shrink-0 pr-3">
       <ul className="list-disc mt-2">
         {specs.map((spec) => (
           <li
             key={spec.uuid}
+            title={spec.url}
             onMouseEnter={() => setHovered(spec.uuid)}
             onMouseLeave={() => setHovered(null)}
             onClick={handleSpecClickFn(spec)}
@@ -153,9 +154,11 @@ function RequestsSpecsList(props: {
               props.selected === spec.uuid ? "bg-accent" : ""
             )}
           >
-            <span className="py-4">
-              <RequestSpecText spec={spec} />
-            </span>
+            <RequestSpecText
+              spec={spec}
+              className="py-4 text-xs"
+              maxUrlLength={20}
+            />
             <span
               className={cn(hovered === spec.uuid ? "visible" : "invisible")}
             >
@@ -325,10 +328,38 @@ function RequestSpecRemovalButton(props: { spec: ProjectRequestSpec }) {
   );
 }
 
-function RequestSpecText(props: { spec: ProjectRequestSpec }) {
+function RequestSpecText(props: {
+  spec: ProjectRequestSpec;
+  className?: string;
+  maxUrlLength?: number;
+}) {
+  const getUrlVisibleText = (): string => {
+    const url = props.spec.url.trim();
+
+    if (!url) {
+      return "?";
+    }
+
+    if (!props.maxUrlLength) {
+      return props.spec.url;
+    }
+
+    if (url.length <= props.maxUrlLength + "...".length) {
+      return props.spec.url;
+    }
+
+    return "..." + url.slice(url.length - props.maxUrlLength);
+  };
+
   return (
-    <span>
-      <code>{props.spec.method}</code> <code>{props.spec.url || "..."}</code>
+    <span
+      className={cn(
+        "text-clip overflow-hidden whitespace-nowrap",
+        props.className
+      )}
+    >
+      <code className="font-bold">{props.spec.method}</code>{" "}
+      <code>{getUrlVisibleText()}</code>
     </span>
   );
 }
