@@ -1,3 +1,4 @@
+/** Each project is like a "folder" to store multiple specs of requests. */
 export interface Project {
   readonly uuid: string;
   readonly name: string;
@@ -5,11 +6,13 @@ export interface Project {
   readonly specs: ProjectRequestSpec[];
 }
 
+/** TODO: to organize requests as "subfolders" in a project. */
 export interface ProjectSection {
   readonly uuid: string;
   readonly name: string;
 }
 
+/** User specification of how its request looks like. */
 export interface ProjectRequestSpec {
   readonly uuid: string;
   readonly url: string;
@@ -18,6 +21,7 @@ export interface ProjectRequestSpec {
   readonly body: string;
 }
 
+/** Data structure of HTTP headers specified in a `ProjectRequestSpec`, can be toggled. */
 export interface ProjectRequestSpecHeader {
   readonly key: string;
   readonly value: string;

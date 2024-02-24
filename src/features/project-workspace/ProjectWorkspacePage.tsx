@@ -24,6 +24,11 @@ import {
 } from "@/components/ui/dialog";
 import { RequestsSpecsContextProvider } from "./RequestsSpecsContextProvider";
 import { useRequestsSpecs } from "./RequestsSpecsContext";
+import {
+  RuntimeState,
+  RequestInfo,
+  ResponseInfo,
+} from "@/entities/runtime-entities";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -33,7 +38,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { RuntimeState } from "@/entities/runtime-entities";
 
 export function ProjectWorkspacePage() {
   const params = useParams();
@@ -190,36 +194,49 @@ function RequestSpecEditor(props: {
 
   const [runtime, setRuntime] = useState<RuntimeState>({
     step: "idle",
-    text: "",
-    status: 0,
+    request: {
+      url: "",
+      method: "",
+      body: "",
+      headers: [],
+    },
+    response: {
+      status: 0,
+      body: "",
+      headers: [],
+    },
+    errorMessage: "",
     startedAt: 0,
     finishedAt: 0,
   });
 
-  const begin = () =>
+  const begin = (request: RequestInfo) =>
     setRuntime({
       step: "running",
-      text: "",
-      status: 0,
+      request,
+      response: {
+        status: 0,
+        body: "",
+        headers: [],
+      },
+      errorMessage: "",
       startedAt: Date.now(),
       finishedAt: 0,
     });
 
-  const success = (text: string, status: number) =>
+  const success = (response: ResponseInfo) =>
     setRuntime((updatingRuntime) => ({
       ...updatingRuntime,
       step: "success",
-      status,
-      text,
+      response,
       finishedAt: Date.now(),
     }));
 
-  const unsuccess = (text: string, status: number) =>
+  const unsuccess = (response: ResponseInfo) =>
     setRuntime((updatingRuntime) => ({
       ...updatingRuntime,
       step: "unsuccess",
-      text,
-      status,
+      response,
       finishedAt: Date.now(),
     }));
 
@@ -232,16 +249,35 @@ function RequestSpecEditor(props: {
     }));
 
   const runSpec = async (running: { method: string; url: string }) => {
-    begin();
+    const requestInfo: RequestInfo = {
+      url: running.url,
+      method: running.method,
+      body: "",
+      headers: spec?.headers.length
+        ? spec.headers.filter((h) => h.isEnabled)
+        : [],
+    };
+
+    begin(requestInfo);
     try {
       const response = await fetch(running.url, {
-        method: running.method,
+        method: requestInfo.method,
+        headers: requestInfo.headers.reduce(
+          (headers, header) => ({ ...headers, [header.key]: header.value }),
+          {}
+        ),
       });
-      const text = await response.text();
+      const responseInfo: ResponseInfo = {
+        status: response.status,
+        body: await response.text(),
+        headers: Object.entries(response.headers).map(
+          ([key, value]: [string, string]) => ({ key, value })
+        ),
+      };
       if (response.ok) {
-        success(text, response.status);
+        success(responseInfo);
       } else {
-        unsuccess(text, response.status);
+        unsuccess(responseInfo);
       }
     } catch (exception) {
       error((exception as Error).message);
@@ -308,11 +344,12 @@ function RequestSpecEditor(props: {
         {runtime.step === "success" && (
           <>
             <p className="text-green-400 mb-3">
-              <strong>HTTP success:</strong> <code>{runtime.status}</code>
+              <strong>HTTP success:</strong>{" "}
+              <code>{runtime.response.status}</code>
             </p>
-            {runtime.text ? (
+            {runtime.response.body ? (
               <p>
-                <code>{runtime.text}</code>
+                <code>{runtime.response.body}</code>
               </p>
             ) : (
               <p>
@@ -324,11 +361,12 @@ function RequestSpecEditor(props: {
         {runtime.step === "unsuccess" && (
           <>
             <p className="text-red-400 mb-3">
-              <strong>HTTP bad code:</strong> <code>{runtime.status}</code>
+              <strong>HTTP bad code:</strong>{" "}
+              <code>{runtime.response.status}</code>
             </p>
-            {runtime.text ? (
+            {runtime.response.body ? (
               <p>
-                <code>{runtime.text}</code>
+                <code>{runtime.response.body}</code>
               </p>
             ) : (
               <p>
@@ -340,9 +378,10 @@ function RequestSpecEditor(props: {
         {runtime.step === "error" && (
           <>
             <p className="text-red-400 mb-3">Error.</p>
-            {runtime.text ? (
+            {runtime.errorMessage ? (
               <p>
-                <strong>Browser reason:</strong> <code>{runtime.text}</code>
+                <strong>Browser reason:</strong>{" "}
+                <code>{runtime.errorMessage}</code>
               </p>
             ) : (
               <p>
