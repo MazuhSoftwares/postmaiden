@@ -1,25 +1,25 @@
 export interface Project {
-  uuid: string;
-  name: string;
-  sections: ProjectSection[];
-  specs: ProjectRequestSpec[];
+  readonly uuid: string;
+  readonly name: string;
+  readonly sections: ProjectSection[];
+  readonly specs: ProjectRequestSpec[];
 }
 
 export interface ProjectSection {
-  uuid: string;
-  name: string;
+  readonly uuid: string;
+  readonly name: string;
 }
 
 export interface ProjectRequestSpec {
-  uuid: string;
-  url: string;
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  headers: ProjectRequestSpecHeader[];
-  body: string;
+  readonly uuid: string;
+  readonly url: string;
+  readonly method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  readonly headers: ProjectRequestSpecHeader[];
+  readonly body: string;
 }
 
 export interface ProjectRequestSpecHeader {
-  key: string;
-  value: string;
-  isEnabled: boolean;
+  readonly key: string;
+  readonly value: string;
+  readonly isEnabled: boolean;
 }

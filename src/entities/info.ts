@@ -1,12 +1,12 @@
 export interface RequestInfo {
-  url: string;
-  method: string;
-  body: string;
-  headers: { [key: string]: string };
+  readonly url: string;
+  readonly method: string;
+  readonly body: string;
+  readonly headers: { [key: string]: string };
 }
 
 export interface ResponseInfo {
-  status: number;
-  body: string;
-  headers: { [key: string]: string };
+  readonly status: number;
+  readonly body: string;
+  readonly headers: { [key: string]: string };
 }

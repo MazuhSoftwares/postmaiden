@@ -401,7 +401,7 @@ const HTTP_METHODS: Array<ProjectRequestSpec["method"]> = [
   "PUT",
   "PATCH",
   "DELETE",
-] as const;
+];
 
 function CreateRequestSpecButton() {
   const { create } = useRequestsSpecs();
