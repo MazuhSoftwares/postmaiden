@@ -57,3 +57,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.collapsible-trigger[aria-expanded="true"] .collapsible-trigger__icon-to-open,
+.collapsible-trigger[aria-expanded="false"]
+  .collapsible-trigger__icon-to-close {
+  display: none;
+}

@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import debounce from "lodash/debounce";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { ProjectRequestSpec } from "@/entities/project-entities";
 import {
   RequestInfo,
   ResponseInfo,
   RuntimeState,
 } from "@/entities/runtime-entities";
-import { useRequestsSpecs } from "./RequestsSpecsContext";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
+import { useRequestsSpecs } from "./RequestsSpecsContext";
 
 export interface RuntimeProps {
   specUuid: ProjectRequestSpec["uuid"] | null;
@@ -155,7 +157,7 @@ export function Runtime(props: RuntimeProps) {
   };
 
   return (
-    <div className="flex flex-col flex-grow px-5 py-3 border-2 h-full">
+    <section className="flex flex-col flex-grow px-5 py-3 border-2 h-full">
       <form className="flex" onSubmit={handleSubmit}>
         <Select defaultValue={spec.method} name="method" required>
           <SelectTrigger aria-label="Method" className="w-[120px]">
@@ -192,6 +194,7 @@ export function Runtime(props: RuntimeProps) {
       </form>
       <div className="mt-5">
         {runtime.step === "running" && <RuntimeProgressBar />}
+
         {runtime.step === "success" && (
           <>
             <h3 className="text-green-400 mb-3">
@@ -208,10 +211,11 @@ export function Runtime(props: RuntimeProps) {
             )}
           </>
         )}
+
         {runtime.step === "unsuccess" && (
           <>
             <h3 className="text-red-400 mb-3">
-              HTTP bad status <code>{runtime.response.status}</code>
+              HTTP bad status: <code>{runtime.response.status}</code>
             </h3>
             {runtime.response.body ? (
               <p>
@@ -224,6 +228,7 @@ export function Runtime(props: RuntimeProps) {
             )}
           </>
         )}
+
         {runtime.step === "error" && (
           <>
             <h3 className="text-red-400 mb-3">Error</h3>
@@ -245,6 +250,7 @@ export function Runtime(props: RuntimeProps) {
             </p>
           </>
         )}
+
         {runtime.finishedAt > 0 && (
           <p className="mt-3 text-xs text-gray-500">
             {runtime.step.toUpperCase()} in{" "}
@@ -252,60 +258,26 @@ export function Runtime(props: RuntimeProps) {
             {new Date(runtime.startedAt).toLocaleTimeString("en-US")}.
           </p>
         )}
+
         {(runtime.step === "success" ||
           runtime.step === "unsuccess" ||
           runtime.step === "error") && (
-          <Collapsible className="mt-5">
-            <CollapsibleTrigger>
-              Request headers ({runtime.request.headers.length})
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              {runtime.request.headers.length ? (
-                <ul>
-                  {runtime.request.headers.map((header) => (
-                    <li key={header.key}>
-                      <code>
-                        {header.key}: {header.value}
-                      </code>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>
-                  No headers (but double check in your console network inspector
-                  if browser injected any).
-                </p>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+          <CollapsibleHeadersList
+            heading={`Request headers (${runtime.request.headers.length})`}
+            headers={runtime.request.headers}
+            emptyMessage="No headers (but double check in your console network inspector if your browser injected any)."
+          />
         )}
+
         {(runtime.step === "success" || runtime.step === "unsuccess") && (
-          <Collapsible className="mt-5">
-            <CollapsibleTrigger>
-              <h3>Response headers ({runtime.response.headers.length})</h3>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              {runtime.response.headers.length ? (
-                <ul>
-                  {runtime.response.headers.map((header) => (
-                    <li key={header.key}>
-                      <code>
-                        {header.key}: {header.value}
-                      </code>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>
-                  No response headers (but your browser may have limited it,
-                  double check in yur console network inspector).
-                </p>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+          <CollapsibleHeadersList
+            heading={`Response headers (${runtime.response.headers.length})`}
+            headers={runtime.response.headers}
+            emptyMessage="No response headers (but your browser may have omitted a few, double check in your console network inspector)."
+          />
         )}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -328,6 +300,45 @@ function RuntimeProgressBar() {
   }, []);
 
   return <Progress value={progress} className="w-[60%] m-auto" />;
+}
+
+function CollapsibleHeadersList(props: {
+  heading: string;
+  headers: Array<{ key: string; value: string }>;
+  emptyMessage: string;
+}) {
+  return (
+    <Collapsible className="mt-5">
+      <CollapsibleTrigger className="collapsible-trigger w-full text-left hover:bg-accent">
+        <h3>
+          <FontAwesomeIcon
+            icon={faCaretRight}
+            className="collapsible-trigger__icon-to-open"
+          />
+          <FontAwesomeIcon
+            icon={faCaretDown}
+            className="collapsible-trigger__icon-to-close"
+          />{" "}
+          {props.heading}
+        </h3>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        {props.headers.length ? (
+          <ul>
+            {props.headers.map((header) => (
+              <li key={header.key}>
+                <code>
+                  {header.key}: {header.value}
+                </code>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>{props.emptyMessage}</p>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  );
 }
 
 const HTTP_METHODS: Array<ProjectRequestSpec["method"]> = [
