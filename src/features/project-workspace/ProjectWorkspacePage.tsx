@@ -38,6 +38,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export function ProjectWorkspacePage() {
   const params = useParams();
@@ -270,9 +275,10 @@ function RequestSpecEditor(props: {
       const responseInfo: ResponseInfo = {
         status: response.status,
         body: await response.text(),
-        headers: Object.entries(response.headers).map(
-          ([key, value]: [string, string]) => ({ key, value })
-        ),
+        headers: Array.from(response.headers).map(([key, value]) => ({
+          key,
+          value,
+        })),
       };
       if (response.ok) {
         success(responseInfo);
@@ -402,6 +408,58 @@ function RequestSpecEditor(props: {
             {runtime.finishedAt - runtime.startedAt}ms. Started at{" "}
             {new Date(runtime.startedAt).toLocaleTimeString("en-US")}.
           </p>
+        )}
+        {(runtime.step === "success" ||
+          runtime.step === "unsuccess" ||
+          runtime.step === "error") && (
+          <Collapsible className="mt-5">
+            <CollapsibleTrigger>
+              Request headers ({runtime.request.headers.length})
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              {runtime.request.headers.length ? (
+                <ul>
+                  {runtime.request.headers.map((header) => (
+                    <li key={header.key}>
+                      <code>
+                        {header.key}: {header.value}
+                      </code>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>
+                  No headers (but double check in your console network inspector
+                  if browser injected any).
+                </p>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+        {(runtime.step === "success" || runtime.step === "unsuccess") && (
+          <Collapsible className="mt-5">
+            <CollapsibleTrigger>
+              <h3>Response headers ({runtime.response.headers.length})</h3>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              {runtime.response.headers.length ? (
+                <ul>
+                  {runtime.response.headers.map((header) => (
+                    <li key={header.key}>
+                      <code>
+                        {header.key}: {header.value}
+                      </code>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>
+                  No response headers (but your browser may have limited it,
+                  double check in yur console network inspector).
+                </p>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
         )}
       </div>
     </div>
