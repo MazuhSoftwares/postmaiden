@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { RuntimeState } from "@/entities/runtime-entities";
 
 export function ProjectWorkspacePage() {
   const params = useParams();
@@ -187,13 +188,7 @@ function RequestSpecEditor(props: {
   );
   const patchUrl = patchUrlRef.current;
 
-  const [runtime, setRuntime] = useState<{
-    step: "idle" | "running" | "success" | "unsuccess" | "error";
-    text: string;
-    status: number;
-    startedAt: number;
-    finishedAt: number;
-  }>({
+  const [runtime, setRuntime] = useState<RuntimeState>({
     step: "idle",
     text: "",
     status: 0,
