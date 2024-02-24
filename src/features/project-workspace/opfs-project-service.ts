@@ -6,7 +6,7 @@ import type {
   Project,
   ProjectRequestSpec,
   ProjectRequestSpecHeader,
-} from "@/entities/management";
+} from "@/entities/project-entities";
 import { persistProject } from "@/services/opfs-projects-shared-internals";
 import { retrieveProject } from "./opfs-project-service";
 

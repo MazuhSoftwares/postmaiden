@@ -7,7 +7,7 @@ import {
   makeOpfsFileAdapter,
   makeOpfsMainDirAdapter,
 } from "./origin-private-file-system";
-import { Project } from "@/entities/management";
+import { Project } from "@/entities/project-entities";
 
 /**
  * Retrieve a project from the private file system based on its UUID.

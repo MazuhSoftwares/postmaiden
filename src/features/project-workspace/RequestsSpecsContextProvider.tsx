@@ -5,7 +5,7 @@
  */
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import tap from "lodash/tap";
-import { ProjectRequestSpec } from "@/entities/management";
+import { ProjectRequestSpec } from "@/entities/project-entities";
 import {
   retrieveProject,
   createRequestSpec,

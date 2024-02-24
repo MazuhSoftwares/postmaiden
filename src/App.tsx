@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Switch, Router, Route } from "wouter";
-import useClientSession from "./hooks/useClientSession";
+import { useClientSession } from "./hooks/useClientSession";
 import { ProjectsManagementPage } from "./features/projects-management/ProjectsManagementPage";
 import { Button } from "./components/ui/button";
 import { ErrorPageTemplate } from "./components/template/ErrorPage";

@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { AppPageTemplate } from "@/components/template/AppPageTemplate";
 import { Anchor, Title } from "@/components/ui/typography";
-import { ProjectRequestSpec } from "@/entities/management";
+import { ProjectRequestSpec } from "@/entities/project-entities";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {

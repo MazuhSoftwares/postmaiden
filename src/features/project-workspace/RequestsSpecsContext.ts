@@ -1,7 +1,7 @@
 /**
  * Basic definitions for `RequestsSpecsContextProvider` and its access hook.
  */
-import { ProjectRequestSpec } from "@/entities/management";
+import { ProjectRequestSpec } from "@/entities/project-entities";
 import { createContext, useContext } from "react";
 
 export interface RequestsSpecsContextValue {
