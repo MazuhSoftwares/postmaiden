@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 import {
   FormControl,
   FormField,
@@ -58,7 +58,7 @@ function ProjectsManagementHeader() {
       <span className="pr-4">
         <FontAwesomeIcon icon={faLaptopCode} /> List of projects
       </span>
-      <ProjectModalByButton />
+      <ProjectModalByButton btnVariant="secondary" />
     </Title>
   );
 }
@@ -83,7 +83,7 @@ function ProjectsList() {
         <p className="mb-2 w-full">No complex forms, don't worry. 😉</p>
         <br />
         <div className="w-full flex justify-center">
-          <ProjectModalByButton />
+          <ProjectModalByButton btnVariant="default" />
         </div>
       </div>
     );
@@ -104,11 +104,11 @@ function ProjectsList() {
             </Anchor>
             <span
               className={cn(
-                "ml-5",
+                "ml-10",
                 hoveredProject === project.uuid ? "visible" : "invisible"
               )}
             >
-              <ProjectModalByButton project={project} />
+              <ProjectModalByButton project={project} btnVariant="outline" />
               <ProjectRemovalButton project={project} />
             </span>
           </li>
@@ -132,6 +132,7 @@ const projectFormSchema = z.object({
 
 interface ProjectModalByButtonProps {
   project?: ProjectListingItem;
+  btnVariant: ButtonProps["variant"];
 }
 
 function ProjectModalByButton(props: ProjectModalByButtonProps) {
@@ -182,7 +183,7 @@ function ProjectModalByButton(props: ProjectModalByButtonProps) {
           <FontAwesomeIcon icon={faPenToSquare} aria-label="Rename" />
         </Button>
       ) : (
-        <Button onClick={open}>
+        <Button onClick={open} variant={props.btnVariant}>
           <FontAwesomeIcon icon={faFolderPlus} />
           <span className="pl-1">Create project</span>
         </Button>

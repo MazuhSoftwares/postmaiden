@@ -11,7 +11,7 @@ export function AppPageTemplate({
     <div className="h-screen w-screen flex flex-col">
       <header className="px-4 py-3 shrink-0 border-b-2 w-full flex items-center">
         <h1 className="tracking-tight text-2xl cursor-default bg-primary w-fit px-6 py-1 rounded-br-lg font-extralight">
-          Postmaiden
+          <a href="/">Postmaiden</a>
         </h1>
         <div className="ml-auto">
           <p>Hello, developer.</p>

@@ -5,8 +5,8 @@ import { validate as validateUuid } from "uuid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
-  faFileCode,
   faFolderOpen,
+  faPlus,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { AppPageTemplate } from "@/components/template/AppPageTemplate";
@@ -337,16 +337,17 @@ function RequestSpecEditor(props: {
           onChange={handleUrlValueChange}
           required
         />
-        <Button type="submit">Run</Button>
+        <Button type="submit" className="px-10">
+          Run
+        </Button>
       </form>
       <div className="mt-5">
         {runtime.step === "running" && <RuntimeProgressBar />}
         {runtime.step === "success" && (
           <>
-            <p className="text-green-400 mb-3">
-              <strong>HTTP success:</strong>{" "}
-              <code>{runtime.response.status}</code>
-            </p>
+            <h3 className="text-green-400 mb-3">
+              HTTP success: <code>{runtime.response.status}</code>
+            </h3>
             {runtime.response.body ? (
               <p>
                 <code>{runtime.response.body}</code>
@@ -360,10 +361,9 @@ function RequestSpecEditor(props: {
         )}
         {runtime.step === "unsuccess" && (
           <>
-            <p className="text-red-400 mb-3">
-              <strong>HTTP bad code:</strong>{" "}
-              <code>{runtime.response.status}</code>
-            </p>
+            <h3 className="text-red-400 mb-3">
+              HTTP bad status <code>{runtime.response.status}</code>
+            </h3>
             {runtime.response.body ? (
               <p>
                 <code>{runtime.response.body}</code>
@@ -377,7 +377,7 @@ function RequestSpecEditor(props: {
         )}
         {runtime.step === "error" && (
           <>
-            <p className="text-red-400 mb-3">Error.</p>
+            <h3 className="text-red-400 mb-3">Error</h3>
             {runtime.errorMessage ? (
               <p>
                 <strong>Browser reason:</strong>{" "}
@@ -443,8 +443,8 @@ function CreateRequestSpecButton() {
   const handleClick = () => create();
 
   return (
-    <Button onClick={handleClick}>
-      <FontAwesomeIcon icon={faFileCode} />
+    <Button variant="secondary" onClick={handleClick}>
+      <FontAwesomeIcon icon={faPlus} />
       <span className="pl-1">Create request spec</span>
     </Button>
   );
