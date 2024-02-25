@@ -11,10 +11,10 @@ export interface RuntimeState {
    * `"error"` for when the request didn't even reach the server.
    */
   readonly step: "idle" | "running" | "success" | "unsuccess" | "error";
-  /** Observability snapshot of the request. With blank values while `step="idle"`. */
-  readonly request: RequestInfo;
+  /** Observability of the actual performed request. With blank values while `step="idle"`. */
+  readonly request: RequestSnapshot;
   /** Observability of the response. With blank values if there wasn't a server response yet. */
-  readonly response: ResponseInfo;
+  readonly response: ResponseSnapshot;
   /** Any exception unrelated to the direct 1:1 request-response relation (see `step="error"`). */
   readonly errorMessage: string;
   /** Useful metadata for performance visibility. */
@@ -29,7 +29,7 @@ export interface RuntimeState {
  * However, due to browser policies, the actual request headers for example are not
  * fully acessible. There's no API available to preview what the browser itself intercepted.
  */
-export interface RequestInfo {
+export interface RequestSnapshot {
   readonly url: string;
   readonly method: string;
   readonly body: string;
@@ -39,7 +39,7 @@ export interface RequestInfo {
 /**
  * Response received by the server after a request.
  */
-export interface ResponseInfo {
+export interface ResponseSnapshot {
   readonly status: number;
   readonly body: string;
   readonly headers: Array<{ key: string; value: string }>;

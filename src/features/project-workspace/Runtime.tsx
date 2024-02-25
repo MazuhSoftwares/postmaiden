@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { ProjectRequestSpec } from "@/entities/project-entities";
 import {
-  RequestInfo,
-  ResponseInfo,
+  RequestSnapshot,
+  ResponseSnapshot,
   RuntimeState,
 } from "@/entities/runtime-entities";
 import {
@@ -60,7 +60,7 @@ export function Runtime(props: RuntimeProps) {
     finishedAt: 0,
   });
 
-  const begin = (request: RequestInfo) =>
+  const begin = (request: RequestSnapshot) =>
     setRuntime({
       step: "running",
       request,
@@ -74,7 +74,7 @@ export function Runtime(props: RuntimeProps) {
       finishedAt: 0,
     });
 
-  const success = (response: ResponseInfo) =>
+  const success = (response: ResponseSnapshot) =>
     setRuntime((updatingRuntime) => ({
       ...updatingRuntime,
       step: "success",
@@ -82,7 +82,7 @@ export function Runtime(props: RuntimeProps) {
       finishedAt: Date.now(),
     }));
 
-  const unsuccess = (response: ResponseInfo) =>
+  const unsuccess = (response: ResponseSnapshot) =>
     setRuntime((updatingRuntime) => ({
       ...updatingRuntime,
       step: "unsuccess",
@@ -99,7 +99,7 @@ export function Runtime(props: RuntimeProps) {
     }));
 
   const runSpec = async (running: { method: string; url: string }) => {
-    const requestInfo: RequestInfo = {
+    const requestInfo: RequestSnapshot = {
       url: running.url,
       method: running.method,
       body: "",
@@ -110,14 +110,14 @@ export function Runtime(props: RuntimeProps) {
 
     begin(requestInfo);
     try {
-      const response = await fetch(running.url, {
+      const response = await global.fetch(running.url, {
         method: requestInfo.method,
         headers: requestInfo.headers.reduce(
           (headers, header) => ({ ...headers, [header.key]: header.value }),
           {}
         ),
       });
-      const responseInfo: ResponseInfo = {
+      const responseInfo: ResponseSnapshot = {
         status: response.status,
         body: await response.text(),
         headers: Array.from(response.headers).map(([key, value]) => ({
