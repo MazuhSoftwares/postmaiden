@@ -115,7 +115,7 @@ export function Runtime(props: RuntimeProps) {
 
     begin(requestInfo);
     try {
-      const response = await global.fetch(running.url, {
+      const response = await fetch(running.url, {
         method: requestInfo.method,
         headers: requestInfo.headers.reduce(
           (headers, header) => ({ ...headers, [header.key]: header.value }),
