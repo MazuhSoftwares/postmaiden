@@ -26,7 +26,7 @@ import { Progress } from "@/components/ui/progress";
 import { useRequestsSpecs } from "./RequestsSpecsContext";
 
 export interface RuntimeProps {
-  specUuid: ProjectRequestSpec["uuid"] | null;
+  specUuid: ProjectRequestSpec["uuid"];
 }
 
 export function Runtime(props: RuntimeProps) {
@@ -41,6 +41,11 @@ export function Runtime(props: RuntimeProps) {
     debounce(patchUrlUnsafelly, 500)
   );
   const patchUrl = patchUrlRef.current;
+
+  const handleUrlValueChange = (event: React.FormEvent) => {
+    const url = (event.target as HTMLInputElement).value;
+    patchUrl({ uuid: spec!.uuid, url });
+  };
 
   const [runtime, setRuntime] = useState<RuntimeState>({
     step: "idle",
@@ -90,11 +95,11 @@ export function Runtime(props: RuntimeProps) {
       finishedAt: Date.now(),
     }));
 
-  const error = (text: string) =>
+  const error = (errorMessage: string) =>
     setRuntime((updatingRuntime) => ({
       ...updatingRuntime,
       step: "error",
-      text,
+      errorMessage,
       finishedAt: Date.now(),
     }));
 
@@ -103,8 +108,8 @@ export function Runtime(props: RuntimeProps) {
       url: running.url,
       method: running.method,
       body: "",
-      headers: spec?.headers.length
-        ? spec.headers.filter((h) => h.isEnabled)
+      headers: spec!.headers.length
+        ? spec!.headers.filter((h) => h.isEnabled)
         : [],
     };
 
@@ -138,11 +143,6 @@ export function Runtime(props: RuntimeProps) {
   if (spec === null) {
     return null;
   }
-
-  const handleUrlValueChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const url = event.currentTarget.value;
-    patchUrl({ uuid: spec.uuid, url });
-  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

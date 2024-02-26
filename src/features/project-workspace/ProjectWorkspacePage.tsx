@@ -70,7 +70,7 @@ function WorkspaceBody() {
         selected={selectedSpec}
         setSelected={setSelectedSpec}
       />
-      <Runtime key={selectedSpec} specUuid={selectedSpec} />
+      {!!selectedSpec && <Runtime key={selectedSpec} specUuid={selectedSpec} />}
     </WorkspaceContainer>
   );
 }
@@ -141,7 +141,7 @@ function RequestsSpecsList(props: {
             onMouseLeave={() => setHovered(null)}
             onClick={handleSpecClickFn(spec)}
             className={cn(
-              "cursor-pointer flex justify-between items-center px-3",
+              "cursor-pointer flex justify-between items-center px-3 select-none",
               "hover:bg-accent",
               props.selected === spec.uuid ? "bg-accent" : ""
             )}
