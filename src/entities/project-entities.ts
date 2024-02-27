@@ -16,7 +16,14 @@ export interface ProjectSection {
 export interface ProjectRequestSpec {
   readonly uuid: string;
   readonly url: string;
-  readonly method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  readonly method:
+    | "GET"
+    | "POST"
+    | "PUT"
+    | "PATCH"
+    | "DELETE"
+    | "HEAD"
+    | "OPTIONS";
   readonly headers: ProjectRequestSpecHeader[];
   readonly body: string;
 }

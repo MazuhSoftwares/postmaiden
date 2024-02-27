@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import debounce from "lodash/debounce";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCaretDown,
+  faCaretRight,
+  faCircleQuestion,
+} from "@fortawesome/free-solid-svg-icons";
 import { ProjectRequestSpec } from "@/entities/project-entities";
 import {
   RequestSnapshot,
@@ -24,6 +28,19 @@ import {
 } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
 import { useRequestsSpecs } from "./RequestsSpecsContext";
+import {
+  HTTP_METHODS,
+  getMethodExplanation,
+  getStatusExplanation,
+  getStatusText,
+} from "../../entities/http-for-dummies";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export interface RuntimeProps {
   specUuid: ProjectRequestSpec["uuid"];
@@ -40,12 +57,16 @@ export function Runtime(props: RuntimeProps) {
   const patchUrlRef = useRef<typeof patchUrlUnsafelly>(
     debounce(patchUrlUnsafelly, 500)
   );
-  const patchUrl = patchUrlRef.current;
+  const patchUrl = (url: string) =>
+    patchUrlRef.current({ uuid: spec!.uuid, url });
 
-  const handleUrlValueChange = (event: React.FormEvent) => {
+  const handleUrlChange = (event: React.FormEvent) => {
     const url = (event.target as HTMLInputElement).value;
-    patchUrl({ uuid: spec!.uuid, url });
+    patchUrl(url);
   };
+
+  const patchMethod = (method: string) =>
+    patch({ uuid: spec!.uuid, method: method as ProjectRequestSpec["method"] });
 
   const [runtime, setRuntime] = useState<RuntimeState>({
     step: "idle",
@@ -159,7 +180,12 @@ export function Runtime(props: RuntimeProps) {
   return (
     <section className="flex flex-col flex-grow px-5 py-3 border-2 h-full">
       <form className="flex" onSubmit={handleSubmit}>
-        <Select defaultValue={spec.method} name="method" required>
+        <Select
+          defaultValue={spec.method}
+          name="method"
+          onValueChange={patchMethod}
+          required
+        >
           <SelectTrigger aria-label="Method" className="w-[120px]">
             <SelectValue />
           </SelectTrigger>
@@ -168,7 +194,7 @@ export function Runtime(props: RuntimeProps) {
               <SelectItem
                 key={method}
                 value={method}
-                disabled={method !== "GET"}
+                title={getMethodExplanation(method)}
               >
                 {method}
               </SelectItem>
@@ -185,7 +211,7 @@ export function Runtime(props: RuntimeProps) {
           maxLength={2083}
           className="mx-3 w-full"
           defaultValue={spec.url || ""}
-          onChange={handleUrlValueChange}
+          onChange={handleUrlChange}
           required
         />
         <Button type="submit" className="px-10">
@@ -195,42 +221,12 @@ export function Runtime(props: RuntimeProps) {
       <div className="mt-5">
         {runtime.step === "running" && <RuntimeProgressBar />}
 
-        {runtime.step === "success" && (
-          <>
-            <h3 className="text-green-400 mb-3">
-              HTTP success: <code>{runtime.response.status}</code>
-            </h3>
-            {runtime.response.body ? (
-              <p>
-                <code>{runtime.response.body}</code>
-              </p>
-            ) : (
-              <p>
-                But <strong>empty</strong> body.
-              </p>
-            )}
-          </>
-        )}
-
-        {runtime.step === "unsuccess" && (
-          <>
-            <h3 className="text-red-400 mb-3">
-              HTTP bad status: <code>{runtime.response.status}</code>
-            </h3>
-            {runtime.response.body ? (
-              <p>
-                <code>{runtime.response.body}</code>
-              </p>
-            ) : (
-              <p>
-                For <strong>unknown</strong> reasons.
-              </p>
-            )}
-          </>
+        {(runtime.step === "success" || runtime.step == "unsuccess") && (
+          <ResponseContent result={runtime.step} response={runtime.response} />
         )}
 
         {runtime.step === "error" && (
-          <>
+          <div>
             <h3 className="text-red-400 mb-3">Error</h3>
             {runtime.errorMessage ? (
               <p>
@@ -243,20 +239,22 @@ export function Runtime(props: RuntimeProps) {
               </p>
             )}
             <p>
-              This error was thrown by the browser, not the server.
+              This specific error was thrown by your own browser, not exactly
+              the server.
               <br />
               Open your browser console, run the request again and check if
               there are more evidences.
             </p>
-          </>
+          </div>
         )}
 
         {runtime.finishedAt > 0 && (
-          <p className="mt-3 text-xs text-gray-500">
-            {runtime.step.toUpperCase()} in{" "}
+          <DiscreteParagraph>
+            Method: <strong>{runtime.request.method.toUpperCase()}</strong>.
+            Result: {runtime.step.toUpperCase()} in{" "}
             {runtime.finishedAt - runtime.startedAt}ms. Started at{" "}
             {new Date(runtime.startedAt).toLocaleTimeString("en-US")}.
-          </p>
+          </DiscreteParagraph>
         )}
 
         {(runtime.step === "success" ||
@@ -265,7 +263,6 @@ export function Runtime(props: RuntimeProps) {
           <CollapsibleHeadersList
             heading={`Request headers (${runtime.request.headers.length})`}
             headers={runtime.request.headers}
-            emptyMessage="No headers (but double check in your console network inspector if your browser injected any)."
           />
         )}
 
@@ -273,7 +270,6 @@ export function Runtime(props: RuntimeProps) {
           <CollapsibleHeadersList
             heading={`Response headers (${runtime.response.headers.length})`}
             headers={runtime.response.headers}
-            emptyMessage="No response headers (but your browser may have omitted a few, double check in your console network inspector)."
           />
         )}
       </div>
@@ -302,11 +298,67 @@ function RuntimeProgressBar() {
   return <Progress value={progress} className="w-[60%] m-auto" />;
 }
 
+function ResponseContent(props: {
+  result: "success" | "unsuccess";
+  response: ResponseSnapshot;
+}) {
+  const isSuccess = props.result === "success";
+
+  const [isStatusExplanationOpen, setIsStatusExplanationOpen] = useState(false);
+  const openStatusExplanation = () => setIsStatusExplanationOpen(true);
+
+  return (
+    <div>
+      <h3 className={cn("mb-3", isSuccess ? "text-green-400" : "text-red-400")}>
+        <span>{isSuccess ? "HTTP success" : "HTTP bad status"}</span>{" "}
+        <code>{props.response.status}</code>{" "}
+        <Dialog
+          open={isStatusExplanationOpen}
+          onOpenChange={setIsStatusExplanationOpen}
+        >
+          <span
+            className="cursor-help"
+            role="button"
+            onClick={openStatusExplanation}
+          >
+            ({getStatusText(props.response.status) || "Unknown"})
+          </span>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                <FontAwesomeIcon icon={faCircleQuestion} />
+                <span className="pl-2">
+                  {getStatusText(props.response.status) || "Unknown"}
+                </span>
+              </DialogTitle>
+            </DialogHeader>
+            <p>{getStatusExplanation(props.response.status)} 🧑‍💻</p>
+          </DialogContent>
+        </Dialog>
+      </h3>
+      {props.response.body ? (
+        <p>
+          <code>{props.response.body}</code>
+        </p>
+      ) : (
+        <p>
+          But <strong>empty</strong> body.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function CollapsibleHeadersList(props: {
   heading: string;
   headers: Array<{ key: string; value: string }>;
-  emptyMessage: string;
 }) {
+  const thereAreItems = props.headers.length > 0;
+
+  const [isMissingExplanationOpen, setIsMissingExplanationOpen] =
+    useState(false);
+  const openMissingExplanation = () => setIsMissingExplanationOpen(true);
+
   return (
     <Collapsible className="mt-5">
       <CollapsibleTrigger className="collapsible-trigger w-full text-left hover:bg-accent">
@@ -323,7 +375,7 @@ function CollapsibleHeadersList(props: {
         </h3>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        {props.headers.length ? (
+        {thereAreItems && (
           <ul>
             {props.headers.map((header) => (
               <li key={header.key}>
@@ -333,18 +385,51 @@ function CollapsibleHeadersList(props: {
               </li>
             ))}
           </ul>
-        ) : (
-          <p>{props.emptyMessage}</p>
         )}
+
+        <Dialog
+          open={isMissingExplanationOpen}
+          onOpenChange={setIsMissingExplanationOpen}
+        >
+          <div
+            className="cursor-help"
+            role="button"
+            onClick={openMissingExplanation}
+          >
+            <DiscreteParagraph>
+              {thereAreItems
+                ? "... and probably more."
+                : "But your browser might be hidding them."}
+            </DiscreteParagraph>
+          </div>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                <FontAwesomeIcon icon={faCircleQuestion} />
+                <span className="pl-2">Missing headers?</span>
+              </DialogTitle>
+            </DialogHeader>
+            <p>
+              Yes, a few headers might be missing. 🤔 Because{" "}
+              <strong>we don't have servers intercepting</strong> your requests
+              and responses, so your <strong>browser has rigid control</strong>{" "}
+              over what the client is running. It implements arbitrary policies
+              to <strong>inject/override</strong> headers into requests and{" "}
+              <strong>omit</strong> headers from responses.
+            </p>
+            <p>
+              But rejoice! You can still view them all. Open your{" "}
+              <strong>browser inspector</strong>, select the{" "}
+              <strong>network</strong> tab, run the request again and check
+              these detailed headers. 🔍
+            </p>
+          </DialogContent>
+        </Dialog>
       </CollapsibleContent>
     </Collapsible>
   );
 }
 
-const HTTP_METHODS: Array<ProjectRequestSpec["method"]> = [
-  "GET",
-  "POST",
-  "PUT",
-  "PATCH",
-  "DELETE",
-];
+function DiscreteParagraph(props: { children: ReactNode }) {
+  return <p className="mt-3 text-xs text-gray-300">{props.children}</p>;
+}
