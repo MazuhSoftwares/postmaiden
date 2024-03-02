@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import debounce from "lodash/debounce";
+import { v4 as uuidv4 } from "uuid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCaretDown,
@@ -12,6 +13,8 @@ import {
   ResponseSnapshot,
   RuntimeState,
 } from "@/entities/runtime-entities";
+import { cn } from "@/lib/utils";
+import { Anchor } from "@/components/ui/typography";
 import {
   Select,
   SelectContent,
@@ -27,20 +30,20 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
-import { useRequestsSpecs } from "./RequestsSpecsContext";
-import {
-  HTTP_METHODS,
-  getMethodExplanation,
-  getStatusExplanation,
-  getStatusText,
-} from "../../entities/http-for-dummies";
-import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  HTTP_METHODS,
+  getMethodExplanation,
+  getStatusExplanation,
+  getStatusText,
+  isRequestingToLocalhost,
+} from "../../entities/http-for-dummies";
+import { useRequestsSpecs } from "./RequestsSpecsContext";
 
 export interface RuntimeProps {
   specUuid: ProjectRequestSpec["uuid"];
@@ -134,6 +137,9 @@ export function Runtime(props: RuntimeProps) {
         : [],
     };
 
+    const logId = uuidv4();
+
+    console.log(`[${logId}] Running request...`);
     begin(requestInfo);
     try {
       const response = await fetch(running.url, {
@@ -151,12 +157,15 @@ export function Runtime(props: RuntimeProps) {
           value,
         })),
       };
+      console.log(`[${logId}] Got response.`);
       if (response.ok) {
+        console.log("Success.");
         success(responseInfo);
       } else {
         unsuccess(responseInfo);
       }
     } catch (exception) {
+      console.log(`[${logId}] Excepcional error.`);
       error((exception as Error).message);
     }
   };
@@ -229,7 +238,7 @@ export function Runtime(props: RuntimeProps) {
           <div>
             <h3 className="text-red-400 mb-3">Error</h3>
             {runtime.errorMessage ? (
-              <p>
+              <p className="mb-5">
                 <strong>Browser reason:</strong>{" "}
                 <code>{runtime.errorMessage}</code>
               </p>
@@ -238,7 +247,23 @@ export function Runtime(props: RuntimeProps) {
                 For <strong>unknown</strong> reasons.
               </p>
             )}
-            <p>
+            {isRequestingToLocalhost(runtime.request) && (
+              <p className="mb-5">
+                <span role="img" aria-label="Idea">
+                  💡
+                </span>
+                You're requesting <code>localhost</code>, it can be a classic{" "}
+                <Anchor
+                  href="https://stackoverflow.com/a/46505542"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  CORS policy
+                </Anchor>{" "}
+                issue.
+              </p>
+            )}
+            <p className="mb-5">
               This specific error was thrown by your own browser, not exactly
               the server.
               <br />

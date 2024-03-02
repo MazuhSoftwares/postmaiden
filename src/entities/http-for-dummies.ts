@@ -1,4 +1,18 @@
+/**
+ * Some HTTP-related utilities.
+ */
+
 import { ProjectRequestSpec } from "@/entities/project-entities";
+import { RequestSnapshot } from "./runtime-entities";
+
+export function isRequestingToLocalhost(request: RequestSnapshot): boolean {
+  return [
+    "http://localhost",
+    "https://localhost",
+    "http://127.0.0.1",
+    "https://127.0.0.1",
+  ].some((localBeginning) => request.url.startsWith(localBeginning));
+}
 
 /** HTTP methods but as constants. */
 export const HTTP_METHODS: Array<ProjectRequestSpec["method"]> = [
