@@ -1,4 +1,7 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { cn } from "@/lib/utils";
+import { faGlobe } from "@fortawesome/free-solid-svg-icons";
 
 export function AppPageTemplate({
   children,
@@ -28,16 +31,43 @@ export function AppPageTemplate({
       <footer className="shrink-0 w-full p-2 pb-3 border-t">
         <p className="flex justify-center">
           <a
+            href="https://postmaiden.com.br/"
+            target="_blank"
+            className="flex transition-colors hover:text-foreground/80 text-foreground/60"
+            aria-label="Official Postmaiden website"
+            title="Official Postmaiden website"
+          >
+            <FontAwesomeIcon
+              icon={faGlobe}
+              className="w-6 h-6 mr-2 select-none text-white"
+            />
+          </a>
+          <a
             href="https://mazuhsoftwares.com/"
             target="_blank"
             className="flex transition-colors hover:text-foreground/80 text-foreground/60"
+            aria-label="Made by Mazuh Softwares"
+            title="Made by Mazuh Softwares"
+            rel="noopener noreferrer"
           >
             <img
               src="https://mazuhsoftwares.files.wordpress.com/2022/10/cropped-mediumsquarelogo.jpg"
               alt="All rights reserved."
               className="w-6 h-6 mr-2 rounded-full select-none"
             />
-            <span>Made by Mazuh Softwares</span>
+          </a>
+          <a
+            href="https://github.com/MazuhSoftwares/postmaiden"
+            target="_blank"
+            className="flex transition-colors hover:text-foreground/80 text-foreground/60"
+            aria-label="Free source under MIT License, available on GitHub"
+            title="Free source under MIT License, available on GitHub"
+            rel="noopener noreferrer"
+          >
+            <FontAwesomeIcon
+              icon={faGithub}
+              className="w-6 h-6 mr-2 select-none text-white"
+            />
           </a>
         </p>
       </footer>
