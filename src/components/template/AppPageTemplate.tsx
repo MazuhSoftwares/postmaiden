@@ -1,7 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { cn } from "@/lib/utils";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons";
+import MazuhSoftwaresLogo from "@/assets/mazuhsoftwares.jpeg";
+import { cn } from "@/lib/utils";
 
 export function AppPageTemplate({
   children,
@@ -51,7 +52,7 @@ export function AppPageTemplate({
             rel="noopener noreferrer"
           >
             <img
-              src="https://mazuhsoftwares.files.wordpress.com/2022/10/cropped-mediumsquarelogo.jpg"
+              src={MazuhSoftwaresLogo}
               alt="All rights reserved."
               className="w-6 h-6 mr-2 rounded-full select-none"
             />
