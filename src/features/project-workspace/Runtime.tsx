@@ -335,7 +335,7 @@ function ResponseContent(props: {
   return (
     <div>
       <h3 className={cn("mb-3", isSuccess ? "text-green-400" : "text-red-400")}>
-        <span>{isSuccess ? "HTTP success" : "HTTP bad status"}</span>{" "}
+        <span>{isSuccess ? "HTTP success" : "HTTP bad status"}</span>:{" "}
         <code>{props.response.status}</code>{" "}
         <Dialog
           open={isStatusExplanationOpen}
