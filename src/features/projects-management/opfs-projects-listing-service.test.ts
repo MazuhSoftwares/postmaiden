@@ -65,12 +65,17 @@ describe("OPFS project listing service", () => {
     expect(project.name).toBe("Poke API");
 
     expect(persistMock).toHaveBeenCalledTimes(1);
-    expect(persistMock).toHaveBeenCalledWith({
-      uuid: "46b9450e-248f-4194-bc2c-f8973e96959a",
-      name: "Poke API",
-      sections: [],
-      specs: [],
-    });
+    const [lastCallArg] = persistMock.mock.lastCall;
+    expect(lastCallArg.uuid).toEqual("46b9450e-248f-4194-bc2c-f8973e96959a");
+    expect(lastCallArg.name).toEqual("Poke API");
+    expect(lastCallArg.specs).toHaveLength(1);
+    expect(lastCallArg.specs[0].url).toBe("");
+    expect(lastCallArg.specs[0].method).toBe("GET");
+    expect(lastCallArg.specs[0].body).toBe("");
+    expect(lastCallArg.specs[0].headers).toEqual([
+      { key: "Content-Type", value: "application/json", isEnabled: false },
+      { key: "Accept", value: "application/json", isEnabled: true },
+    ]);
   });
 
   it("can remove a project by quering the specific file within the directory", async () => {

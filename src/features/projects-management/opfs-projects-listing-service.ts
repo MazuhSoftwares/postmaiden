@@ -18,6 +18,7 @@ import {
   getListingItemFromFilename,
   removeProject,
   retrieveProject,
+  makeDefaultRequestSpec,
 } from "@/services/opfs-projects-shared-internals";
 
 /**
@@ -62,7 +63,7 @@ export async function persistNewProjectListingItem(
     uuid: item.uuid,
     name: item.name,
     sections: [],
-    specs: [],
+    specs: [makeDefaultRequestSpec()],
   });
 
   return item;

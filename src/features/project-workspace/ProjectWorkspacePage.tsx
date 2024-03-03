@@ -99,7 +99,7 @@ function WorkspaceContainer({ children }: { children: React.ReactNode }) {
   if (specs.length === 0) {
     return (
       <div className="w-fit m-auto flex flex-col text-center">
-        <Title>✨ Created. ✨</Title>
+        <Title>✨ Your project is ready for use. ✨</Title>
         <p className="mb-2 w-full text-center">
           <em>{projectName}</em>
         </p>

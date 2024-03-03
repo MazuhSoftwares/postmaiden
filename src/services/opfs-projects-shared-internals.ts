@@ -4,11 +4,16 @@
  *
  * Avoid using this directly on UI, prefer contextual service adapters.
  */
+import { v4 as uuidv4 } from "uuid";
 import {
   makeOpfsFileAdapter,
   makeOpfsMainDirAdapter,
 } from "./origin-private-file-system";
-import { Project } from "@/entities/project-entities";
+import {
+  Project,
+  ProjectRequestSpec,
+  ProjectRequestSpecHeader,
+} from "@/entities/project-entities";
 
 /**
  * Retrieve a project from the private file system based on its UUID.
@@ -114,6 +119,22 @@ export function getListingItemFromFilename(
  * The private subdirectory where all projects are stored.
  */
 export const PROJECTS_OPFS_SUBDIRECTORY = "projects";
+
+/** In memory instance of a new request spec. */
+export function makeDefaultRequestSpec(): ProjectRequestSpec {
+  return {
+    uuid: uuidv4(),
+    url: "",
+    method: "GET",
+    headers: [...DEFAULT_REQUEST_SPEC_HEADERS],
+    body: "",
+  };
+}
+
+const DEFAULT_REQUEST_SPEC_HEADERS: readonly ProjectRequestSpecHeader[] = [
+  { key: "Content-Type", value: "application/json", isEnabled: false },
+  { key: "Accept", value: "application/json", isEnabled: true },
+];
 
 function hygienizeProjectName(name: string): string {
   return (

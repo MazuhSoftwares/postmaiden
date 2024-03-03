@@ -11,6 +11,7 @@ jest.mock("wouter", () => ({
 jest.mock("@/services/opfs-projects-shared-internals", () => ({
   retrieveProject: jest.fn(),
   persistProject: jest.fn(),
+  makeDefaultRequestSpec: jest.fn(),
 }));
 
 describe("Projects workspace page", () => {
@@ -20,6 +21,13 @@ describe("Projects workspace page", () => {
     jest.spyOn(wouter, "useParams").mockReturnValue({
       uuid: "2372aa5e-9042-4c47-a7e5-a01d9d6005ea",
     });
+
+    jest
+      .spyOn(OPFSSharedInternalsService, "makeDefaultRequestSpec")
+      .mockImplementation(
+        jest.requireActual("@/services/opfs-projects-shared-internals")
+          .makeDefaultRequestSpec
+      );
 
     jest
       .spyOn(OPFSSharedInternalsService, "retrieveProject")

@@ -7,13 +7,11 @@
  * And to prevent circular dependencies, there's also a kernel module,
  * see: `src/services/opfs-projects-shared-internals.ts`
  */
-import { v4 as uuidv4 } from "uuid";
-import type {
-  Project,
-  ProjectRequestSpec,
-  ProjectRequestSpecHeader,
-} from "@/entities/project-entities";
-import { persistProject } from "@/services/opfs-projects-shared-internals";
+import type { Project, ProjectRequestSpec } from "@/entities/project-entities";
+import {
+  makeDefaultRequestSpec,
+  persistProject,
+} from "@/services/opfs-projects-shared-internals";
 import { retrieveProject } from "./opfs-project-service";
 
 export { retrieveProject } from "@/services/opfs-projects-shared-internals";
@@ -29,13 +27,7 @@ export interface CreateRequestSpecParams {
 export async function createRequestSpec(
   params: CreateRequestSpecParams
 ): Promise<ProjectRequestSpec> {
-  const creating: ProjectRequestSpec = {
-    uuid: uuidv4(),
-    url: "",
-    method: "GET",
-    headers: [...DEFAULT_REQUEST_SPEC_HEADERS],
-    body: "",
-  };
+  const creating: ProjectRequestSpec = makeDefaultRequestSpec();
 
   const project = await retrieveProject(params.projectUuid);
   const updatedProject: Project = {
@@ -102,8 +94,3 @@ export async function patchRequestSpec(
 
   return updatedSpec;
 }
-
-const DEFAULT_REQUEST_SPEC_HEADERS: readonly ProjectRequestSpecHeader[] = [
-  { key: "Content-Type", value: "application/json", isEnabled: false },
-  { key: "Accept", value: "application/json", isEnabled: true },
-];
