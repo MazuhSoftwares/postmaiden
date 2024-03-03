@@ -79,7 +79,7 @@ describe("OPFS project listing service", () => {
         .fn()
         .mockResolvedValue([
           "82184240-6b29-4ae8-82f5-fbe7d1bb814a_Other random API.json",
-          "73aa5920-55e6-4275-b193-a9a9ad5de15d_LoL API with other persisted name.json",
+          "73aa5920-55e6-4275-b193-a9a9ad5de15d_LoL API.json",
         ]),
     });
 
@@ -95,8 +95,7 @@ describe("OPFS project listing service", () => {
     expect(result).toEqual({ uuid: "73aa5920-55e6-4275-b193-a9a9ad5de15d" });
 
     expect(opfsAdapters.makeOpfsFileAdapter).toHaveBeenCalledWith({
-      filename:
-        "73aa5920-55e6-4275-b193-a9a9ad5de15d_LoL API with other persisted name.json",
+      filename: "73aa5920-55e6-4275-b193-a9a9ad5de15d_LoL API.json",
       subdir: "projects",
     });
     expect(removeMock).toHaveBeenCalledTimes(1);
@@ -112,9 +111,16 @@ describe("OPFS project listing service", () => {
         ]),
     });
 
+    const retrieveMock = jest.fn().mockResolvedValue({
+      uuid: "4db20d2a-542e-4c01-95bf-df49fb6dcbd8",
+      name: "Dorio API",
+      sections: [],
+      specs: [],
+    });
     const removeMock = jest.fn();
     const persistMock = jest.fn();
     (opfsAdapters.makeOpfsFileAdapter as jest.Mock).mockResolvedValue({
+      retrieve: retrieveMock,
       persist: persistMock,
       remove: removeMock,
     });

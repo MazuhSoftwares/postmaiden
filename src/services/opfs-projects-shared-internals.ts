@@ -1,8 +1,9 @@
 /**
  * A shared kernel serving as dependency for two or more OPFS services
  * from difference project features.
+ *
+ * Avoid using this directly on UI, prefer contextual service adapters.
  */
-
 import {
   makeOpfsFileAdapter,
   makeOpfsMainDirAdapter,
@@ -46,18 +47,22 @@ export async function persistProject(project: Project): Promise<void> {
  * Remove a file from the projects private directory, thus
  * destroying permanently the project, based only
  * on its UUID.
+ *
+ * PS: the filename to be deleted is a combination of the UUID and name,
+ * to prevent any possible collision (sometimes, during renaming, there
+ * might be two files having the same UUID).
  */
-export async function removeProject(uuid: string): Promise<{ uuid: string }> {
-  const filename = await retrieveProjectFilenameByUuid(uuid);
-
+export async function removeProject(
+  item: Pick<Project, "uuid" | "name">
+): Promise<{ uuid: string }> {
   const file = await makeOpfsFileAdapter<never>({
-    filename,
+    filename: getProjectFilename(item),
     subdir: PROJECTS_OPFS_SUBDIRECTORY,
   });
 
   await file.remove();
 
-  return { uuid };
+  return { uuid: item.uuid };
 }
 
 /**
@@ -92,7 +97,7 @@ export function getListingItemFromFilename(
   filename: string
 ): Pick<Project, "uuid" | "name"> | null {
   const rFilename =
-    /^(?<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})_(?<name>[A-Za-z 0-9]+)\.json$/;
+    /^(?<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})_(?<name>.*)\.json$/;
   const match = filename.match(rFilename);
   if (!match || !match.groups) {
     console.error(`Invalid project filename (corrupted data?): ${filename}`);

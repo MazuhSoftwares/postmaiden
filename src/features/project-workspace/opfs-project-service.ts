@@ -1,5 +1,11 @@
 /**
  * Implements management of each single project using the Origin Private File System.
+ *
+ * For managing the listing and names of projects,
+ * see `src/features/projects-management/opfs-projects-listing-service.ts`.
+ *
+ * And to prevent circular dependencies, there's also a kernel module,
+ * see: `src/services/opfs-projects-shared-internals.ts`
  */
 import { v4 as uuidv4 } from "uuid";
 import type {

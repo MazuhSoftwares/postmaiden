@@ -1,5 +1,11 @@
 /**
  * Implements project listing service using the Origin Private File System.
+ *
+ * For managing the content of each project internal data,
+ * see `src/features/project-workspace/opfs-project-service.ts`.
+ *
+ * And to prevent circular dependencies, there's also a kernel module,
+ * see: `src/services/opfs-projects-shared-internals.ts`
  */
 import { v4 as uuidv4 } from "uuid";
 import { makeOpfsMainDirAdapter } from "../../services/origin-private-file-system";
@@ -11,6 +17,7 @@ import {
   persistProject,
   getListingItemFromFilename,
   removeProject,
+  retrieveProject,
 } from "@/services/opfs-projects-shared-internals";
 
 /**
@@ -68,7 +75,7 @@ export async function persistNewProjectListingItem(
 export async function removeProjectListingItem(
   project: ProjectListingItem
 ): Promise<{ uuid: string }> {
-  return removeProject(project.uuid);
+  return removeProject(project);
 }
 
 /**
@@ -89,28 +96,20 @@ export async function updateProjectListingItem(
     throw new Error("Project name cannot be empty.");
   }
 
-  const item: ProjectListingItem = {
-    uuid: updating.uuid,
-    name: updating.name,
-  };
-
-  const listing = await retrieveProjectsListing();
-  const found = listing.items.find((i) => i.uuid === item.uuid);
-  if (!found) {
-    throw new Error("Project being updated is stale.");
+  const existing = await retrieveProject(updating.uuid);
+  if (!existing) {
+    throw new Error("Project being updated might be stale.");
   }
 
-  await persistProject({
-    ...found,
-    ...item,
-    // TODO: this is erasing previous sections and requests.
-    sections: [],
-    specs: [],
-  });
+  const updated = {
+    ...existing,
+    ...updating,
+  };
+  await persistProject(updated);
 
-  await removeProjectListingItem(found);
+  await removeProjectListingItem(existing);
 
-  return item;
+  return updated;
 }
 
 export const PROJECTS_OPFS_SUBDIRECTORY = "projects";
