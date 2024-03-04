@@ -45,6 +45,12 @@ For core development, there are some useful testing scripts:
 - Serverless cloud infrastructure.
 - Reasonable test coverage on each feature.
 
+## Sharing knowledge
+
+For each "big feature", I'll write something about it in Portuguese (BR):
+
+- Introduction to OPFS: https://mazuhsoftwares.com/2024/03/04/manipulando-arquivos-no-frontend-com-origin-private-file-system-opfs-nativamente/
+
 ## License
 
 Released under [MIT License](https://github.com/MazuhSoftwares/postmaiden/blob/main/LICENSE)
