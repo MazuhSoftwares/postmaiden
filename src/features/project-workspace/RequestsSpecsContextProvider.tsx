@@ -29,12 +29,12 @@ export function RequestsSpecsContextProvider({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setError] = useState<Error | null>(null);
 
-  const loadProject = useCallback(async () => {
+  const loadProject = useCallback(() => {
     setError(null);
     retrieveProject(projectUuid)
       .then((project) => tap(project, (p) => setProjectName(p.name)))
       .then((project) => tap(project, (p) => setSpecs(p.specs)))
-      .catch((error) => setError(error))
+      .catch((error: Error) => setError(error))
       .finally(() => setIsLoading(false));
   }, [projectUuid]);
 
@@ -46,7 +46,7 @@ export function RequestsSpecsContextProvider({
     setError(null);
     return createRequestSpec({ projectUuid })
       .then((created) => tap(created, () => loadProject()))
-      .catch((error) => tap(null, () => setError(error)));
+      .catch((error: Error) => tap(null, () => setError(error)));
   }, [projectUuid, loadProject]);
 
   const patch: RequestsSpecsContextValue["patch"] = useCallback(
@@ -54,7 +54,7 @@ export function RequestsSpecsContextProvider({
       setError(null);
       return patchRequestSpec({ projectUuid, patching })
         .then(() => tap(null, () => loadProject()))
-        .catch((error) => tap(null, () => setError(error)));
+        .catch((error: Error) => tap(null, () => setError(error)));
     },
     [projectUuid, loadProject]
   );
@@ -65,7 +65,7 @@ export function RequestsSpecsContextProvider({
       setIsLoading(true);
       return removeRequestSpec({ projectUuid, removing: removing.uuid })
         .then(() => tap(null, () => loadProject()))
-        .catch((error) => tap(null, () => setError(error)));
+        .catch((error: Error) => tap(null, () => setError(error)));
     },
     [projectUuid, loadProject]
   );

@@ -104,7 +104,7 @@ export function getListingItemFromFilename(
   const rFilename =
     /^(?<uuid>[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})_(?<name>.*)\.json$/;
   const match = filename.match(rFilename);
-  if (!match || !match.groups) {
+  if (!match?.groups) {
     console.error(`Invalid project filename (corrupted data?): ${filename}`);
     return null;
   }

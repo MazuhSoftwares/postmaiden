@@ -58,7 +58,7 @@ export async function makeOpfsFileAdapter<T>({
   const retrieve = async (): Promise<T | null> => {
     const file = await fileHandle.getFile();
     const text = await file.text();
-    return text ? JSON.parse(text) : null;
+    return text ? (JSON.parse(text) as T) : null;
   };
 
   const persist = async (data: T) => {
@@ -131,19 +131,19 @@ export async function makeOpfsMainDirAdapter({
 
 export function isPersistenceSupported(): boolean {
   return (
-    typeof window.FileSystemFileHandle?.prototype?.createWritable === "function"
+    typeof window.FileSystemFileHandle.prototype.createWritable === "function"
   );
 }
 
 export const MAIN_OPFS_DIRECTORY = "postmaiden.com";
 
-if (["production", "development"].includes(process.env.NODE_ENV || "?")) {
+if (["production", "development"].includes(process.env.NODE_ENV ?? "?")) {
   // expose internals, mostly just for fun.
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
   (window as any).isPersistenceSupported = isPersistenceSupported;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
   (window as any).makeOpfsMainDirAdapter = makeOpfsMainDirAdapter;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
   (window as any).makeOpfsFileAdapter = makeOpfsFileAdapter;
 }

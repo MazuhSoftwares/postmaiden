@@ -1,20 +1,20 @@
 import { createContext, useContext } from "react";
 import { FieldPath, FieldValues, useFormContext } from "react-hook-form";
 
-export type FormFieldContextValue<
+export interface FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
-> = {
+> {
   name: TName;
-};
+}
 
 export const FormFieldContext = createContext<FormFieldContextValue>(
   {} as FormFieldContextValue
 );
 
-export type FormItemContextValue = {
+export interface FormItemContextValue {
   id: string;
-};
+}
 
 export const FormItemContext = createContext<FormItemContextValue>(
   {} as FormItemContextValue

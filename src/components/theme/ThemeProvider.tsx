@@ -1,11 +1,11 @@
 import { Theme, ThemeProviderContext } from "@/components/theme/useTheme";
 import { useEffect, useState } from "react";
 
-export type ThemeProviderProps = {
+export interface ThemeProviderProps {
   children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
-};
+}
 
 export function ThemeProvider({
   children,
@@ -14,7 +14,7 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    () => (localStorage.getItem(storageKey) as Theme | null) ?? defaultTheme
   );
 
   useEffect(() => {

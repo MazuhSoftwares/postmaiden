@@ -36,9 +36,9 @@ export async function retrieveProjectsListing(): Promise<ProjectListing> {
   const filenames = await opfsDir.retrieveFilenames();
   return {
     items: filenames
-      .reduce(
+      .reduce<(ProjectListingItem | null)[]>(
         (acc, filename) => [...acc, getListingItemFromFilename(filename)],
-        [] as (ProjectListingItem | null)[]
+        []
       )
       .filter((it) => it !== null) as ProjectListingItem[],
   };
@@ -98,9 +98,6 @@ export async function updateProjectListingItem(
   }
 
   const existing = await retrieveProject(updating.uuid);
-  if (!existing) {
-    throw new Error("Project being updated might be stale.");
-  }
 
   const updated = {
     ...existing,

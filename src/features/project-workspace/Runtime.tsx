@@ -51,25 +51,33 @@ export interface RuntimeProps {
 
 export function Runtime(props: RuntimeProps) {
   const { specs, patch } = useRequestsSpecs();
-  const spec = specs.find((s) => s.uuid === props.specUuid) || null;
+  const spec = specs.find((s) => s.uuid === props.specUuid) ?? null;
 
   const patchUrlUnsafelly = (patching: { uuid: string; url: string }) => {
-    patch(patching);
+    patch(patching).catch(console.error);
   };
 
   const patchUrlRef = useRef<typeof patchUrlUnsafelly>(
     debounce(patchUrlUnsafelly, 500)
   );
   const patchUrl = (url: string) =>
-    patchUrlRef.current({ uuid: spec!.uuid, url });
+    spec ? patchUrlRef.current({ uuid: spec.uuid, url }) : null;
 
   const handleUrlChange = (event: React.FormEvent) => {
     const url = (event.target as HTMLInputElement).value;
     patchUrl(url);
   };
 
-  const patchMethod = (method: string) =>
-    patch({ uuid: spec!.uuid, method: method as ProjectRequestSpec["method"] });
+  const patchMethod = (method: string) => {
+    if (!spec) {
+      throw new Error("Unexpected missing spec.");
+    }
+
+    patch({
+      uuid: spec.uuid,
+      method: method as ProjectRequestSpec["method"],
+    }).catch(console.error);
+  };
 
   const [runtime, setRuntime] = useState<RuntimeState>({
     step: "idle",
@@ -128,12 +136,16 @@ export function Runtime(props: RuntimeProps) {
     }));
 
   const runSpec = async (running: { method: string; url: string }) => {
+    if (!spec) {
+      throw new Error("Unexpected missing spec.");
+    }
+
     const requestInfo: RequestSnapshot = {
       url: running.url,
       method: running.method,
       body: "",
-      headers: spec!.headers.length
-        ? spec!.headers.filter((h) => h.isEnabled)
+      headers: spec.headers.length
+        ? spec.headers.filter((h) => h.isEnabled)
         : [],
     };
 
@@ -183,7 +195,7 @@ export function Runtime(props: RuntimeProps) {
     const url = (
       event.currentTarget.elements.namedItem("url") as HTMLInputElement
     ).value;
-    runSpec({ method, url });
+    runSpec({ method, url }).catch(console.error);
   };
 
   return (
@@ -252,7 +264,8 @@ export function Runtime(props: RuntimeProps) {
                 <span role="img" aria-label="Idea">
                   💡
                 </span>
-                You're requesting <code>localhost</code>, it can be a classic{" "}
+                You&apos;re requesting <code>localhost</code>, it can be a
+                classic{" "}
                 <Anchor
                   href="https://stackoverflow.com/a/46505542"
                   target="_blank"
@@ -376,7 +389,7 @@ function ResponseContent(props: {
 
 function CollapsibleHeadersList(props: {
   heading: string;
-  headers: Array<{ key: string; value: string }>;
+  headers: { key: string; value: string }[];
 }) {
   const thereAreItems = props.headers.length > 0;
 
@@ -436,10 +449,11 @@ function CollapsibleHeadersList(props: {
             </DialogHeader>
             <p>
               Yes, a few headers might be missing. 🤔 Because{" "}
-              <strong>we don't have servers intercepting</strong> your requests
-              and responses, so your <strong>browser has rigid control</strong>{" "}
-              over what the client is running. It implements arbitrary policies
-              to <strong>inject/override</strong> headers into requests and{" "}
+              <strong>we don&apos;t have servers intercepting</strong> your
+              requests and responses, so your{" "}
+              <strong>browser has rigid control</strong> over what the client is
+              running. It implements arbitrary policies to{" "}
+              <strong>inject/override</strong> headers into requests and{" "}
               <strong>omit</strong> headers from responses.
             </p>
             <p>

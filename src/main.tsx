@@ -6,7 +6,11 @@ import App from "./App.tsx";
 import "./index.css";
 import { ThemeProvider } from "./components/theme/ThemeProvider.tsx";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+const element = document.getElementById("root");
+if (!element)
+  throw new Error("No root element found to render React application.");
+
+ReactDOM.createRoot(element).render(
   <React.StrictMode>
     <ThemeProvider defaultTheme="dark" storageKey="postmaiden-ui-theme">
       <App />

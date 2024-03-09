@@ -36,7 +36,7 @@ export function AppPageTemplate({
             target="_blank"
             className="flex transition-colors hover:text-foreground/80 text-foreground/60"
             aria-label="Official Postmaiden website"
-            title="Official Postmaiden website"
+            title="Official Postmaiden website" rel="noreferrer"
           >
             <FontAwesomeIcon
               icon={faGlobe}

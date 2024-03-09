@@ -15,7 +15,7 @@ export function isRequestingToLocalhost(request: RequestSnapshot): boolean {
 }
 
 /** HTTP methods but as constants. */
-export const HTTP_METHODS: Array<ProjectRequestSpec["method"]> = [
+export const HTTP_METHODS: ProjectRequestSpec["method"][] = [
   "GET",
   "POST",
   "PUT",

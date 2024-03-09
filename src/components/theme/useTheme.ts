@@ -2,10 +2,10 @@ import { createContext, useContext } from "react";
 
 export type Theme = "dark" | "light" | "system";
 
-export type ThemeProviderState = {
+export interface ThemeProviderState {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-};
+}
 
 const initialState: ThemeProviderState = {
   theme: "system",

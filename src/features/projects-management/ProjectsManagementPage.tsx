@@ -80,7 +80,7 @@ function ProjectsList() {
     return (
       <div className="w-fit m-auto flex flex-col">
         <Title>Start now by creating a project.</Title>
-        <p className="mb-2 w-full">No complex forms, don't worry. 😉</p>
+        <p className="mb-2 w-full">No complex forms, don&apos;t worry. 😉</p>
         <br />
         <div className="w-full flex justify-center">
           <ProjectModalByButton btnVariant="default" />
@@ -152,7 +152,7 @@ function ProjectModalByButton(props: ProjectModalByButtonProps) {
   const form = useForm<z.infer<typeof projectFormSchema>>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: {
-      name: props.project?.name || "",
+      name: props.project?.name ?? "",
     },
   });
 
@@ -257,7 +257,7 @@ function ProjectRemovalButton({ project }: { project: ProjectListingItem }) {
 
   const handleSubmit = (event: SyntheticEvent) => {
     event.preventDefault();
-    remove(project).then(close);
+    remove(project).then(close).catch(console.error);
   };
 
   return (

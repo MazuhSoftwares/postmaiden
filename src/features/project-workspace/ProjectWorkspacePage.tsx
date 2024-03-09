@@ -27,7 +27,7 @@ import { Runtime } from "./Runtime";
 
 export function ProjectWorkspacePage() {
   const params = useParams();
-  const projectUuid = validateUuid(params.uuid || "") ? params.uuid : "";
+  const projectUuid = validateUuid(params.uuid ?? "") ? params.uuid : "";
 
   if (!projectUuid) {
     return (
@@ -166,7 +166,9 @@ function RequestsSpecsList(props: {
 function CreateRequestSpecButton() {
   const { create } = useRequestsSpecs();
 
-  const handleClick = () => create();
+  const handleClick = () => {
+    create().catch(console.error);
+  };
 
   return (
     <Button variant="secondary" onClick={handleClick}>
@@ -185,7 +187,7 @@ function RequestSpecRemovalButton(props: { spec: ProjectRequestSpec }) {
 
   const handleSubmit = (event: SyntheticEvent) => {
     event.preventDefault();
-    remove(props.spec).then(close);
+    remove(props.spec).then(close).catch(console.error);
   };
 
   return (

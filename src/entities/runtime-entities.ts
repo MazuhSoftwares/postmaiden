@@ -33,7 +33,7 @@ export interface RequestSnapshot {
   readonly url: string;
   readonly method: string;
   readonly body: string;
-  readonly headers: Array<{ key: string; value: string }>;
+  readonly headers: { key: string; value: string }[];
 }
 
 /**
@@ -42,5 +42,5 @@ export interface RequestSnapshot {
 export interface ResponseSnapshot {
   readonly status: number;
   readonly body: string;
-  readonly headers: Array<{ key: string; value: string }>;
+  readonly headers: { key: string; value: string }[];
 }

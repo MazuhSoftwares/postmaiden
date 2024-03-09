@@ -25,7 +25,7 @@ export function useClientSession(): UseClientSessionResult {
   const doActiveThisSession = useCallback(() => {
     const thisUuid = thisUuidRef.current || uuidv4();
     thisUuidRef.current = thisUuid;
-    persistClientSessionUuid(thisUuid);
+    persistClientSessionUuid(thisUuid).catch(console.error);
     setActive(true);
   }, []);
 

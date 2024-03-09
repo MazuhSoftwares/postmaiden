@@ -25,12 +25,12 @@ export function ProjectsManagementContextProvider({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setError] = useState<Error | null>(null);
 
-  const loadProjectsListing = useCallback(async () => {
+  const loadProjectsListing = useCallback(() => {
     setError(null);
     setIsLoading(true);
     retrieveProjectsListing()
       .then((projects) => setProjects(projects.items))
-      .catch((error) => setError(error))
+      .catch((error: Error) => setError(error))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -47,7 +47,7 @@ export function ProjectsManagementContextProvider({
           loadProjectsListing();
           return created;
         })
-        .catch((error) => {
+        .catch((error: Error) => {
           setError(error);
           return null;
         })
@@ -60,8 +60,8 @@ export function ProjectsManagementContextProvider({
     async (removing: ProjectListingItem) => {
       setError(null);
       setIsLoading(true);
-      removeProjectListingItem(removing)
-        .catch((error) => setError(error))
+      return removeProjectListingItem(removing)
+        .catch((error: Error) => setError(error))
         .finally(() => setIsLoading(false))
         .then(() => loadProjectsListing());
     },
@@ -72,8 +72,8 @@ export function ProjectsManagementContextProvider({
     async (updating: ProjectListingItem) => {
       setError(null);
       setIsLoading(true);
-      updateProjectListingItem(updating)
-        .catch((error) => setError(error))
+      return updateProjectListingItem(updating)
+        .catch((error: Error) => setError(error))
         .finally(() => setIsLoading(false))
         .then(() => loadProjectsListing());
     },
