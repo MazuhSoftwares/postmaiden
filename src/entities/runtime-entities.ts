@@ -32,7 +32,7 @@ export interface RuntimeState {
 export interface RequestSnapshot {
   readonly url: string;
   readonly method: string;
-  readonly body: string;
+  readonly body: string | null;
   readonly headers: { key: string; value: string }[];
 }
 

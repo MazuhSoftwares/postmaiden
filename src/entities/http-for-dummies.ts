@@ -14,6 +14,10 @@ export function isRequestingToLocalhost(request: RequestSnapshot): boolean {
   ].some((localBeginning) => request.url.startsWith(localBeginning));
 }
 
+export function canMethodHaveBody(method: RequestSnapshot["method"]): boolean {
+  return method !== "GET" && method !== "HEAD";
+}
+
 /** HTTP methods but as constants. */
 export const HTTP_METHODS: ProjectRequestSpec["method"][] = [
   "GET",

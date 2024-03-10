@@ -38,12 +38,14 @@ import {
 } from "@/components/ui/dialog";
 import {
   HTTP_METHODS,
+  canMethodHaveBody,
   getMethodExplanation,
   getStatusExplanation,
   getStatusText,
   isRequestingToLocalhost,
 } from "../../entities/http-for-dummies";
 import { useRequestsSpecs } from "./RequestsSpecsContext";
+import { BodyEditor, BodyEditorProps } from "./BodyEditor";
 
 export interface RuntimeProps {
   specUuid: ProjectRequestSpec["uuid"];
@@ -52,6 +54,21 @@ export interface RuntimeProps {
 export function Runtime(props: RuntimeProps) {
   const { specs, patch } = useRequestsSpecs();
   const spec = specs.find((s) => s.uuid === props.specUuid) ?? null;
+
+  // method
+
+  const patchMethod = (method: string) => {
+    if (!spec) {
+      throw new Error("Unexpected missing spec.");
+    }
+
+    patch({
+      uuid: spec.uuid,
+      method: method as ProjectRequestSpec["method"],
+    }).catch(console.error);
+  };
+
+  // url
 
   const patchUrlUnsafelly = (patching: { uuid: string; url: string }) => {
     patch(patching).catch(console.error);
@@ -68,15 +85,21 @@ export function Runtime(props: RuntimeProps) {
     patchUrl(url);
   };
 
-  const patchMethod = (method: string) => {
-    if (!spec) {
-      throw new Error("Unexpected missing spec.");
-    }
+  // body
 
-    patch({
-      uuid: spec.uuid,
-      method: method as ProjectRequestSpec["method"],
-    }).catch(console.error);
+  const patchBodyUnsafelly = (patching: { uuid: string; body: string }) => {
+    patch(patching).catch(console.error);
+  };
+
+  const patchBodyRef = useRef<typeof patchBodyUnsafelly>(
+    debounce(patchBodyUnsafelly, 1000)
+  );
+
+  const patchBody = (body: string) =>
+    spec ? patchBodyRef.current({ uuid: spec.uuid, body }) : null;
+
+  const handleBodyChange: BodyEditorProps["onChange"] = (value) => {
+    patchBody(value ?? "");
   };
 
   const [runtime, setRuntime] = useState<RuntimeState>({
@@ -135,7 +158,11 @@ export function Runtime(props: RuntimeProps) {
       finishedAt: Date.now(),
     }));
 
-  const runSpec = async (running: { method: string; url: string }) => {
+  const runSpec = async (running: {
+    method: string;
+    url: string;
+    body: string;
+  }) => {
     if (!spec) {
       throw new Error("Unexpected missing spec.");
     }
@@ -143,7 +170,9 @@ export function Runtime(props: RuntimeProps) {
     const requestInfo: RequestSnapshot = {
       url: running.url,
       method: running.method,
-      body: "",
+      body: canMethodHaveBody(running.method)
+        ? running.body
+        : running.body || null,
       headers: spec.headers.length
         ? spec.headers.filter((h) => h.isEnabled)
         : [],
@@ -156,6 +185,7 @@ export function Runtime(props: RuntimeProps) {
     try {
       const response = await fetch(running.url, {
         method: requestInfo.method,
+        body: requestInfo.body,
         headers: requestInfo.headers.reduce(
           (headers, header) => ({ ...headers, [header.key]: header.value }),
           {}
@@ -189,57 +219,76 @@ export function Runtime(props: RuntimeProps) {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    // basic, hence requireds
     const method = (
       event.currentTarget.elements.namedItem("method") as HTMLInputElement
     ).value;
     const url = (
       event.currentTarget.elements.namedItem("url") as HTMLInputElement
     ).value;
-    runSpec({ method, url }).catch(console.error);
+
+    // not so basic, hence optional
+    const body = (
+      event.currentTarget.elements.namedItem("body") as HTMLTextAreaElement
+    ).value;
+
+    // aw yeah
+    runSpec({ method, url, body }).catch(console.error);
   };
 
   return (
     <section className="flex flex-col flex-grow px-5 py-3 border-2 h-full">
-      <form className="flex" onSubmit={handleSubmit}>
-        <Select
-          defaultValue={spec.method}
-          name="method"
-          onValueChange={patchMethod}
-          required
-        >
-          <SelectTrigger aria-label="Method" className="w-[120px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {HTTP_METHODS.map((method) => (
-              <SelectItem
-                key={method}
-                value={method}
-                title={getMethodExplanation(method)}
-              >
-                {method}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          type="url"
-          aria-label="URL"
-          name="url"
-          placeholder="Enter URL here..."
-          autoComplete="off"
-          spellCheck={false}
-          maxLength={2083}
-          className="mx-3 w-full"
-          defaultValue={spec.url || ""}
-          onChange={handleUrlChange}
-          required
-        />
-        <Button type="submit" className="px-10">
-          Run
-        </Button>
+      <form onSubmit={handleSubmit}>
+        <div className="flex">
+          <Select
+            defaultValue={spec.method}
+            name="method"
+            onValueChange={patchMethod}
+            required
+          >
+            <SelectTrigger aria-label="Method" className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {HTTP_METHODS.map((method) => (
+                <SelectItem
+                  key={method}
+                  value={method}
+                  title={getMethodExplanation(method)}
+                >
+                  {method}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            type="url"
+            aria-label="URL"
+            name="url"
+            placeholder="Enter URL here..."
+            autoComplete="off"
+            spellCheck={false}
+            maxLength={2083}
+            className="mx-3 w-full"
+            defaultValue={spec.url || ""}
+            onChange={handleUrlChange}
+            required
+          />
+          <Button type="submit" className="px-10">
+            Run
+          </Button>
+        </div>
+
+        <div className="mt-5 h-3/4">
+          <BodyEditor
+            name="body"
+            defaultValue={spec.body}
+            onChange={handleBodyChange}
+          />
+        </div>
       </form>
-      <div className="mt-5">
+
+      <div className="mt-5 overflow-y-auto">
         {runtime.step === "running" && <RuntimeProgressBar />}
 
         {(runtime.step === "success" || runtime.step == "unsuccess") && (

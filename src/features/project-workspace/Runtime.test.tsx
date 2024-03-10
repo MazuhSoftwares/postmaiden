@@ -13,8 +13,25 @@ jest.mock("@/services/opfs-projects-shared-internals", () => ({
   persistProject: jest.fn(),
 }));
 
+jest.mock("./BodyEditor.tsx", () => ({
+  BodyEditor: jest
+    .fn()
+    .mockImplementation(({ name, defaultValue, onChange }) => (
+      <div id="mocked-body-editor">
+        <textarea
+          name={name}
+          defaultValue={defaultValue}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </div>
+    )),
+}));
+
 interface MockedGlobalWithFetch {
-  fetch: (url: string) => Promise<MockedResponse>;
+  fetch: (
+    url: string,
+    options: { body: string; method: string }
+  ) => Promise<MockedResponse>;
 }
 
 interface MockedResponse {
@@ -80,6 +97,24 @@ describe("Runtime component, given a selected specification", () => {
             ],
             body: "",
           },
+          {
+            uuid: "f4eb2eec-3527-4d96-b34a-cc0e9914231c",
+            url: "https://echo.zuplo.io/",
+            method: "POST",
+            headers: [
+              { key: "Accept", value: "application/json", isEnabled: true },
+            ],
+            body: JSON.stringify({ "this is": "an echo test" }),
+          },
+          {
+            uuid: "894f6e21-8002-4111-938b-dbebaaa44966",
+            url: "https://echo.zuplo.io/",
+            method: "GET",
+            headers: [
+              { key: "Accept", value: "application/json", isEnabled: true },
+            ],
+            body: JSON.stringify({ "this is": "an echo test" }),
+          },
         ],
       });
 
@@ -89,7 +124,14 @@ describe("Runtime component, given a selected specification", () => {
 
     jest
       .spyOn(global as unknown as MockedGlobalWithFetch, "fetch")
-      .mockImplementation(async (url: string) => {
+      .mockImplementation(async (url, { body, method }) => {
+        if ((method === "GET" || method === "HEAD") && body !== null) {
+          // same behavior as Chrome
+          throw new Error(
+            "Failed to execute 'fetch' on 'Window': Request with GET/HEAD method cannot have body."
+          );
+        }
+
         switch (url) {
           case "https://api.zippopotam.us/us/33162":
             return {
@@ -147,6 +189,15 @@ describe("Runtime component, given a selected specification", () => {
 
           case "https://catfact.ninja/non-existing":
             throw new Error("CORS Error (mocked).");
+
+          case "https://echo.zuplo.io/":
+            // this is similar but not exactly the same behavior as this Echo API
+            return {
+              text: async () => body,
+              status: 200,
+              ok: true,
+              headers: [["content-type", "application/json"]],
+            };
 
           default:
             throw new Error(
@@ -229,6 +280,32 @@ describe("Runtime component, given a selected specification", () => {
             { key: "Accept", value: "application/json", isEnabled: true },
           ],
           body: "",
+        },
+        {
+          body: '{"this is":"an echo test"}',
+          headers: [
+            {
+              isEnabled: true,
+              key: "Accept",
+              value: "application/json",
+            },
+          ],
+          method: "POST",
+          url: "https://echo.zuplo.io/",
+          uuid: "f4eb2eec-3527-4d96-b34a-cc0e9914231c",
+        },
+        {
+          body: '{"this is":"an echo test"}',
+          headers: [
+            {
+              isEnabled: true,
+              key: "Accept",
+              value: "application/json",
+            },
+          ],
+          method: "GET",
+          url: "https://echo.zuplo.io/",
+          uuid: "894f6e21-8002-4111-938b-dbebaaa44966",
         },
       ],
     });
@@ -373,5 +450,63 @@ describe("Runtime component, given a selected specification", () => {
 
     expect(screen.getByText("Error")).toBeVisible();
     expect(screen.getByText(/CORS Error/im)).toBeVisible();
+  });
+
+  it("can perform a POST using a body", async () => {
+    await act(async () =>
+      render(
+        <RequestsSpecsContextProvider projectUuid="7fde4f8e-b6ac-4218-ae20-1b866e61ec56">
+          <Runtime specUuid="f4eb2eec-3527-4d96-b34a-cc0e9914231c" />
+        </RequestsSpecsContextProvider>
+      )
+    );
+
+    const input = screen.getByText(/an echo test/, { selector: "textarea" });
+    expect(input).toBeVisible();
+
+    const run = screen.getByRole("button", { name: /Run/i });
+    await act(async () => fireEvent.click(run));
+
+    expect(screen.getByText(/HTTP success/i)).toBeVisible();
+    expect(screen.getByText("200")).toBeVisible();
+
+    const output = screen.getByText(/an echo test/, { selector: "code" });
+    expect(output).toBeVisible();
+
+    expect(global.fetch as jest.Mock).toHaveBeenCalledWith(
+      "https://echo.zuplo.io/",
+      {
+        body: '{"this is":"an echo test"}',
+        headers: { Accept: "application/json" },
+        method: "POST",
+      }
+    );
+  });
+
+  it("can perform a GET using a body, even if it throws an error", async () => {
+    await act(async () =>
+      render(
+        <RequestsSpecsContextProvider projectUuid="7fde4f8e-b6ac-4218-ae20-1b866e61ec56">
+          <Runtime specUuid="894f6e21-8002-4111-938b-dbebaaa44966" />
+        </RequestsSpecsContextProvider>
+      )
+    );
+
+    const run = screen.getByRole("button", { name: /Run/i });
+    await act(async () => fireEvent.click(run));
+
+    expect(screen.queryByText(/HTTP success/i)).toBe(null);
+    expect(screen.queryByText("200")).toBe(null);
+
+    expect(screen.getByText("Error")).toBeVisible();
+
+    expect(global.fetch as jest.Mock).toHaveBeenCalledWith(
+      "https://echo.zuplo.io/",
+      {
+        body: '{"this is":"an echo test"}',
+        headers: { Accept: "application/json" },
+        method: "GET",
+      }
+    );
   });
 });
